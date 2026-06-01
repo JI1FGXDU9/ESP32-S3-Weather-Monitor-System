@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+
+<!-- ==========================================================
+     Weather Monitor Web Page
+     気象モニター Webページ
+     ----------------------------------------------------------
+     Displays:
+     表示内容
+
+     - Shade temperature
+       日陰温度
+
+     - Sun temperature
+       日向温度
+
+     - Humidity
+       湿度
+
+     - Atmospheric pressure
+       気圧
+
+     - Historical graph
+       履歴グラフ
+     ========================================================== -->
+
+<html>
+
+<head>
+
+<!-- ==========================================================
+     Character encoding
+     文字コード設定
+     ========================================================== -->
+<meta charset="UTF-8">
+
+<!-- ==========================================================
+     Mobile viewport support
+     スマートフォン表示対応
+     ========================================================== -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Weather Monitor</title>
+
+<!-- ==========================================================
+     Chart.js library
+     Chart.js ライブラリー
+     ----------------------------------------------------------
+     Used for graph display
+     グラフ表示用
+     ========================================================== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+/* ==========================================================
+   Page body style
+   ページ全体スタイル
+   ========================================================== */
+body {
+
+  margin: 0;
+
+  background: #1f1f1f;
+
+  color: white;
+
+  font-family: Arial, sans-serif;
+
+  text-align: center;
+}
+
+/* ==========================================================
+   Main title
+   メインタイトル
+   ========================================================== */
+h1 {
+
+  margin-top: 10px;
+
+  font-size: 32px;
+}
+
+/* ==========================================================
+   Sensor value card
+   センサー値表示カード
+   ========================================================== */
+.card {
+
+  background: #303030;
+
+  max-width: 430px;
+
+  margin: 20px auto;
+
+  padding: 20px 10px 25px 10px;
+
+  border-radius: 10px;
+}
+
+/* ==========================================================
+   Small label text
+   ラベル文字
+   ========================================================== */
+.label {
+
+  font-size: 16px;
+}
+
+/* ==========================================================
+   Main temperature display
+   メイン温度表示
+   ========================================================== */
+.main-temp {
+
+  color: orange;
+
+  font-size: 48px;
+
+  margin: 5px 0 15px 0;
+}
+
+/* ==========================================================
+   Sensor item display
+   センサー項目表示
+   ========================================================== */
+.item {
+
+  font-size: 24px;
+
+  margin: 10px 0;
+}
+
+/* ==========================================================
+   Graph display area
+   グラフ表示エリア
+   ========================================================== */
+.chart-box {
+
+  background: #303030;
+
+  max-width: 1000px;
+
+  margin: 20px auto;
+
+  padding: 15px;
+
+  border-radius: 10px;
+
+  height: 420px;
+}
+
+/* ==========================================================
+   Shade temperature color
+   日陰温度色
+   ========================================================== */
+.shade-value {
+
+  color: #36a2eb;
+}
+
+/* ==========================================================
+   Sun temperature color
+   日向温度色
+   ========================================================== */
+.sun-value {
+
+  color: #ff6384;
+}
+
+/* ==========================================================
+   Humidity color
+   湿度色
+   ========================================================== */
+.humidity-value {
+
+  color: #ff9f40;
+}
+
+/* ==========================================================
+   Pressure color
+   気圧色
+   ========================================================== */
+.pressure-value {
+
+  color: #ffcd56;
+}
+
+/* ==========================================================
+   Mobile screen adjustment
+   スマートフォン画面調整
+   ----------------------------------------------------------
+   Applied when screen width is 600px or less
+   画面幅600px以下で適用
+   ========================================================== */
+@media screen and (max-width: 600px) {
+
+  .chart-box {
+
+    width: 98vw;
+
+    height: 360px;
+
+    padding: 8px;
+  }
+
+  .item {
+
+    font-size: 16px;
+  }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- ==========================================================
+     Page title
+     ページタイトル
+     ========================================================== -->
+<h1>Clarin Weather Monitor</h1>
+
+
+<!-- ==========================================================
+     Current data time display
+     現在データの時刻表示
+     ========================================================== -->
+<div id="timeText" style="
+  font-size:18px;
+  color:#cccccc;
+  margin-bottom:15px;
+">
+----/--/-- --:--
+</div>
+
+
+<!-- ==========================================================
+     Current sensor value card
+     現在のセンサー値表示カード
+     ========================================================== -->
+<div class="card">
+
+<!-- Shade temperature label -->
+<!-- 日陰温度ラベル -->
+<div class="label">SHADE TEMP / 日陰</div>
+
+<!-- Main shade temperature display -->
+<!-- メインの日陰温度表示 -->
+<div class="main-temp">
+  <span id="shade_temp" class="shade-value">--.- °C</span>
+</div>
+
+<!-- Sun temperature display -->
+<!-- 太陽直下温度表示 -->
+<div class="item">
+  SUN TEMP / 太陽直下:
+  <span id="sun_temp" class="sun-value">--.-</span> °C
+</div>
+
+<!-- Humidity display -->
+<!-- 湿度表示 -->
+<div class="item">
+  HUMIDITY / 湿度　　:
+  <span id="humidity" class="humidity-value">--.-</span> %
+</div>
+
+<!-- Pressure display -->
+<!-- 気圧表示 -->
+<div class="item">
+  PRESSURE / 気圧　　:
+  <span id="pressure" class="pressure-value">----.-</span> hPa
+</div>
+
+</div>
+
+
+<!-- ==========================================================
+     Chart area
+     グラフ表示エリア
+     ========================================================== -->
+<div class="chart-box">
+
+  <!-- Chart selection buttons -->
+  <!-- グラフ切り替えボタン -->
+  <div style="margin-bottom:10px;">
+    <button onclick="showMainChart()">Temp / 気温</button>
+    <button onclick="showHumidityChart()">Humidity / 湿度</button>
+    <button onclick="showPressureChart()">Pressure / 気圧</button>
+  </div>
+  <div style="
+    margin-bottom:8px;
+    color:white;
+    font-size:14px;
+  ">
+  
+    Day:
+  
+    <input
+      id="dayOffset"
+      type="number"
+      min="0"
+      max="30"
+      value="0"
+      style="
+        width:55px;
+        font-size:16px;
+        text-align:center;
+      "
+      onchange="loadHistory()"
+    >
+  
+    days ago
+
+    <button
+      onclick="
+        document.getElementById('dayOffset').value = 0;
+        loadHistory();
+      "
+      style="
+        margin-left:8px;
+        font-size:14px;
+        padding:2px 8px;
+      "
+    >
+      TODAY
+    </button>
+
+  </div>
+  <!-- Chart.js canvas -->
+  <!-- Chart.js グラフ描画エリア -->
+  <canvas id="weatherChart" height="320"></canvas>
+
+</div>
+
+<script>
+
+// ============================================================
+// Global chart object
+// グローバルグラフオブジェクト
+// ------------------------------------------------------------
+// Stores Chart.js instance
+// Chart.js インスタンスを保持
+// ============================================================
+let weatherChart = null;
+
+
+// ============================================================
+// Current chart mode
+// 現在のグラフモード
+// ------------------------------------------------------------
+// "main"     = temperature graph
+// "humidity" = humidity graph
+// "pressure" = pressure graph
+//
+// "main"     = 温度グラフ
+// "humidity" = 湿度グラフ
+// "pressure" = 気圧グラフ
+// ============================================================
+let chartMode = "main";
+
+
+// ============================================================
+// Graph data arrays
+// グラフデータ配列
+// ------------------------------------------------------------
+// lastLabels    = time labels
+// lastShade     = shade temperature
+// lastSun       = sun temperature
+// lastHumidity  = humidity
+// lastPressure  = pressure
+//
+// lastLabels    = 時刻ラベル
+// lastShade     = 日陰温度
+// lastSun       = 日向温度
+// lastHumidity  = 湿度
+// lastPressure  = 気圧
+// ============================================================
+let lastLabels = [];
+
+let lastShade = [];
+
+let lastSun = [];
+
+let lastHumidity = [];
+
+let lastPressure = [];
+
+
+// ============================================================
+// Load latest sensor values
+// 最新センサー値取得
+// ------------------------------------------------------------
+// Reads data.json from server
+// サーバーの data.json を読み込む
+//
+// "?ts=" prevents browser cache
+// "?ts=" はブラウザーキャッシュ防止
+// ============================================================
+function loadLatest() {
+
+  fetch("data.json?ts=" + new Date().getTime())
+
+    // ========================================================
+    // Convert HTTP response to JSON
+    // HTTP応答をJSONへ変換
+    // ========================================================
+    .then(response => response.json())
+
+    // ========================================================
+    // Update displayed sensor values
+    // 表示中のセンサー値更新
+    // ========================================================
+    .then(data => {
+
+      // Shade temperature
+      // 日陰温度
+      document.getElementById("shade_temp").textContent =
+        data.shade_temp + " °C";
+
+      // Sun temperature
+      // 日向温度
+      document.getElementById("sun_temp").textContent =
+        data.sun_temp;
+
+      // Humidity
+      // 湿度
+      document.getElementById("humidity").textContent =
+        data.humidity;
+
+      // Pressure
+      // 気圧
+      document.getElementById("pressure").textContent =
+        data.pressure;
+    });
+}
+
+
+// ============================================================
+// Update clock display
+// 時計表示更新
+// ------------------------------------------------------------
+// Gets current local time from browser
+// ブラウザーから現在時刻を取得
+//
+// Display format:
+// 表示形式:
+//
+// YYYY-MM-DD HH:MM
+// ============================================================
+function updateClock() {
+
+  // ==========================================================
+  // Get current date/time
+  // 現在日時取得
+  // ==========================================================
+  const now = new Date();
+
+
+  // ==========================================================
+  // Year
+  // 年
+  // ==========================================================
+  const y = now.getFullYear();
+
+
+  // ==========================================================
+  // Month
+  // 月
+  // ----------------------------------------------------------
+  // getMonth() returns 0-11
+  // getMonth() は 0-11 を返すため +1
+  //
+  // padStart(2,'0')
+  // Add leading zero
+  // 先頭ゼロ追加
+  // ==========================================================
+  const mo = String(now.getMonth() + 1).padStart(2, '0');
+
+
+  // ==========================================================
+  // Day
+  // 日
+  // ==========================================================
+  const d = String(now.getDate()).padStart(2, '0');
+
+
+  // ==========================================================
+  // Hour
+  // 時
+  // ==========================================================
+  const h = String(now.getHours()).padStart(2, '0');
+
+
+  // ==========================================================
+  // Minute
+  // 分
+  // ==========================================================
+  const mi = String(now.getMinutes()).padStart(2, '0');
+
+
+  // ==========================================================
+  // Update clock text
+  // 時計表示更新
+  // ==========================================================
+  document.getElementById("timeText").textContent =
+
+    `${y}-${mo}-${d} ${h}:${mi}`;
+}
+
+// ============================================================
+// Load history data from CSV
+// CSV履歴データ読み込み
+// ------------------------------------------------------------
+// Reads history.csv and converts it to graph data arrays
+// history.csv を読み込み、グラフ用配列へ変換する
+//
+// Graph X-axis is fixed to 24 hours
+// グラフのX軸は24時間固定
+//
+// Data interval:
+// データ間隔:
+//
+// 10 minutes
+// 10分間隔
+// ============================================================
+function loadHistory() {
+
+  fetch("history.csv?ts=" + Date.now(), { cache: "no-store" })
+
+    .then(response => response.text())
+
+    .then(text => {
+
+      const lines = text.trim().split("\n");
+
+      // Remove header line
+      // ヘッダー行を削除
+      lines.shift();
+
+      const labels = [];
+      const shade = [];
+      const sun = [];
+      const humidity = [];
+      const pressure = [];
+
+      // ======================================================
+      // Create fixed 24-hour labels
+      // 24時間固定ラベル作成
+      // ======================================================
+      for (let h = 0; h < 24; h++) {
+
+        for (let m = 0; m < 60; m += 10) {
+
+          const labelHour = String(h).padStart(2, "0");
+          const labelMin  = String(m).padStart(2, "0");
+
+          labels.push(`${labelHour}:${labelMin}`);
+
+          shade.push(null);
+          sun.push(null);
+          humidity.push(null);
+          pressure.push(null);
+        }
+      }
+
+      // ======================================================
+      // Get selected day offset
+      // 表示する日付のオフセット取得
+      // 0 = today, 1 = yesterday, ... 30 = 30 days ago
+      // 0 = 今日, 1 = 昨日, ... 30 = 30日前
+      // ======================================================
+      const offsetInput = document.getElementById("dayOffset");
+
+      let dayOffset = 0;
+
+      if (offsetInput) {
+        dayOffset = parseInt(offsetInput.value, 10);
+
+        if (isNaN(dayOffset)) {
+          dayOffset = 0;
+        }
+
+        if (dayOffset < 0) {
+          dayOffset = 0;
+        }
+
+        if (dayOffset > 30) {
+          dayOffset = 30;
+        }
+
+        offsetInput.value = dayOffset;
+      }
+
+      const targetDate = new Date();
+
+      targetDate.setHours(0, 0, 0, 0);
+      targetDate.setDate(targetDate.getDate() - dayOffset);
+
+      // ======================================================
+      // Process each CSV line
+      // CSV各行を処理
+      // ======================================================
+      lines.forEach(line => {
+
+        if (!line.trim()) return;
+
+        const cols = line.trim().split(",");
+
+        // CSV:
+        // 0 = date
+        // 1 = time
+        // 2 = shade_temp
+        // 3 = sun_temp
+        // 4 = humidity
+        // 5 = pressure
+        if (cols.length < 6) return;
+
+        const dateStr = cols[0].trim();
+        const timeStr = cols[1].trim();
+
+        const dateParts = dateStr.replace(/-/g, "/").split("/");
+        const timeParts = timeStr.split(":");
+
+        if (dateParts.length < 3) return;
+        if (timeParts.length < 2) return;
+
+        const year  = parseInt(dateParts[0], 10);
+        const month = parseInt(dateParts[1], 10) - 1;
+        const day   = parseInt(dateParts[2], 10);
+
+        const hour   = parseInt(timeParts[0], 10);
+        const minute = parseInt(timeParts[1], 10);
+
+        const dateObj = new Date(year, month, day, hour, minute, 0);
+
+        if (isNaN(dateObj.getTime())) return;
+
+        // ====================================================
+        // Show selected day's data only
+        // 選択日のデータだけ表示
+        // ====================================================
+        if (
+          dateObj.getFullYear() !== targetDate.getFullYear() ||
+          dateObj.getMonth() !== targetDate.getMonth() ||
+          dateObj.getDate() !== targetDate.getDate()
+        ) {
+          return;
+        }
+
+        // ====================================================
+        // Round time to nearest 10 minutes
+        // 時刻を10分単位に丸める
+        // ====================================================
+        const labelDate = new Date(dateObj);
+
+        let roundedMin = Math.round(labelDate.getMinutes() / 10) * 10;
+
+        if (roundedMin >= 60) {
+          labelDate.setHours(labelDate.getHours() + 1);
+          roundedMin = 0;
+        }
+
+        labelDate.setMinutes(roundedMin, 0, 0);
+
+        const index =
+          labelDate.getHours() * 6 + (roundedMin / 10);
+
+        if (index < 0 || index >= labels.length) return;
+
+        shade[index]    = parseFloat(cols[2]);
+        sun[index]      = parseFloat(cols[3]);
+        humidity[index] = parseFloat(cols[4]);
+        pressure[index] = parseFloat(cols[5]);
+      });
+
+      lastLabels = labels;
+      lastShade = shade;
+      lastSun = sun;
+      lastHumidity = humidity;
+      lastPressure = pressure;
+
+      if (chartMode === "pressure") {
+        drawPressureChart();
+      } else if (chartMode === "humidity") {
+        drawHumidityChart();
+      } else {
+        drawMainChart();
+      }
+    });
+}
+
+// ============================================================
+// Draw temperature chart
+// 温度グラフ描画
+// ------------------------------------------------------------
+// Displays:
+//
+// - Shade temperature
+//   日陰温度
+//
+// - Sun temperature
+//   日向温度
+//
+// using Chart.js line graph.
+// Chart.js の折れ線グラフで表示する
+// ============================================================
+function drawMainChart() {
+
+  // ==========================================================
+  // Set current chart mode
+  // 現在のグラフモード設定
+  // ==========================================================
+  chartMode = "main";
+
+
+  // ==========================================================
+  // Get canvas 2D context
+  // canvas の 2D コンテキスト取得
+  // ==========================================================
+  const ctx =
+    document.getElementById("weatherChart").getContext("2d");
+
+
+  // ==========================================================
+  // Destroy previous chart
+  // 前回グラフ削除
+  // ----------------------------------------------------------
+  // Prevent multiple graphs from overlapping
+  // グラフ重複防止
+  // ==========================================================
+  if (weatherChart) {
+    weatherChart.destroy();
+  }
+
+
+  // ==========================================================
+  // Create Chart.js graph
+  // Chart.js グラフ生成
+  // ==========================================================
+  weatherChart = new Chart(ctx, {
+
+    // ========================================================
+    // Graph type
+    // グラフ種類
+    // ========================================================
+    type: "line",
+
+    data: {
+
+      // ======================================================
+      // X-axis labels
+      // X軸ラベル
+      // ======================================================
+      labels: lastLabels,
+
+      datasets: [
+
+        // ====================================================
+        // Shade temperature graph
+        // 日陰温度グラフ
+        // ====================================================
+        {
+          label: "Shade Temp C / 日陰",
+
+          data: lastShade,
+
+          borderWidth: 2,
+
+          // Straight line
+          // 直線表示
+          tension: 0,
+
+          yAxisID: "y",
+
+
+          // ==================================================
+          // Point display control
+          // 点表示制御
+          // --------------------------------------------------
+          // Display points only every hour
+          // 1時間ごとのみ点表示
+          //
+          // Hide all points on mobile
+          // モバイルでは全点非表示
+          // ==================================================
+          pointRadius: function(context) {
+
+            const label =
+              context.chart.data.labels[context.dataIndex];
+
+            // Hide all points on mobile
+            // モバイルは全部非表示
+            if (window.innerWidth <= 600) {
+              return 0;
+            }
+
+            // Show point every hour
+            // 1時間ごとだけ点を表示
+            if (label.endsWith(":00")) {
+              return 4;
+            }
+
+            // No point
+            // 点なし
+            return 0;
+          },
+        },
+
+
+        // ====================================================
+        // Sun temperature graph
+        // 日向温度グラフ
+        // ====================================================
+        {
+          label: "Sun Temp C / 太陽直下",
+
+          data: lastSun,
+
+          borderWidth: 2,
+
+          tension: 0,
+
+          yAxisID: "y",
+
+          pointRadius: function(context) {
+
+            const label =
+              context.chart.data.labels[context.dataIndex];
+
+            // Hide all points on mobile
+            // モバイルは全部非表示
+            if (window.innerWidth <= 600) {
+              return 0;
+            }
+
+            // Show point every hour
+            // 1時間ごとだけ点を表示
+            if (label.endsWith(":00")) {
+              return 4;
+            }
+
+            // No point
+            // 点なし
+            return 0;
+          },
+        }
+      ]
+    },
+
+
+    // ========================================================
+    // Chart options
+    // グラフオプション
+    // ========================================================
+    options: {
+
+      // Auto resize
+      // 自動リサイズ
+      responsive: true,
+
+      // Allow free height scaling
+      // 高さ自由調整
+      maintainAspectRatio: false,
+
+      // Do not connect null values
+      // null値を線で結ばない
+      spanGaps: false,
+
+      plugins: {
+
+        // ====================================================
+        // Legend settings
+        // 凡例設定
+        // ====================================================
+        legend: {
+          labels: {
+            color: "white"
+          }
+        },
+
+        // ====================================================
+        // Chart title
+        // グラフタイトル
+        // ====================================================
+        title: {
+
+          display: false
+        }
+
+      },
+
+
+      // ======================================================
+      // Axis settings
+      // 軸設定
+      // ======================================================
+      scales: {
+
+        // ====================================================
+        // X-axis
+        // X軸
+        // ====================================================
+        x: {
+
+          ticks: {
+
+            color: "white",
+
+            // Do not automatically skip labels
+            // 自動ラベル間引き禁止
+            autoSkip: false,
+
+
+            // ================================================
+            // Display labels only every hour
+            // 1時間ごとのみラベル表示
+            // ================================================
+            callback: function(value, index) {
+            
+              const label = this.getLabelForValue(value);
+            
+              // Mobile: show labels every 2 hours
+              // スマホでは2時間おきに表示
+              if (window.innerWidth <= 600) {
+                const hour = parseInt(label.substring(0, 2), 10);
+            
+                if (label.endsWith(":00") && hour % 2 === 0) {
+                  return label;
+                }
+            
+                return "";
+              }
+            
+              // Desktop: show labels every hour
+              // PCでは1時間おきに表示
+              if (label.endsWith(":00")) {
+                return label;
+              }
+            
+              return "";
+            }
+          },
+
+
+          // ==================================================
+          // X-axis grid line settings
+          // X軸グリッド設定
+          // --------------------------------------------------
+          // Display grid only every hour
+          // 1時間ごとのみグリッド表示
+          // ==================================================
+          grid: {
+
+            color: function(context) {
+
+              const label =
+                context.chart.data.labels[context.index];
+
+              if (label && label.endsWith(":00")) {
+                return "#555";
+              }
+
+              return "rgba(0,0,0,0)";
+            }
+          }
+        },
+
+
+        // ====================================================
+        // Left Y-axis
+        // 左Y軸
+        // ====================================================
+        y: {
+
+          position: "left",
+
+          min: 0,
+
+          max: 60,
+
+          ticks: {
+
+            color: "white"
+          },
+
+          grid: {
+
+            color: "#555"
+          }
+        },
+
+
+        // ====================================================
+        // Right Y-axis
+        // 右Y軸
+        // ----------------------------------------------------
+        // Secondary axis display
+        // 補助軸表示
+        // ====================================================
+        y1: {
+
+          position: "right",
+
+          min: 0,
+
+          max: 60,
+
+          ticks: {
+
+            color: "white"
+          },
+
+          // Do not draw duplicate grid
+          // グリッド重複描画防止
+          grid: {
+
+            drawOnChartArea: false
+          }
+        }
+      }
+    }
+  });
+}
+
+// ============================================================
+// Draw humidity chart
+// 湿度グラフ描画
+// ------------------------------------------------------------
+// Displays humidity history using Chart.js
+// Chart.js を使用して湿度履歴を表示する
+// ============================================================
+function drawHumidityChart() {
+
+  // ==========================================================
+  // Set current chart mode
+  // 現在のグラフモード設定
+  // ==========================================================
+  chartMode = "humidity";
+
+
+  // ==========================================================
+  // Get canvas 2D context
+  // canvas の 2D コンテキスト取得
+  // ==========================================================
+  const ctx =
+    document.getElementById("weatherChart").getContext("2d");
+
+
+  // ==========================================================
+  // Destroy previous chart
+  // 前回グラフ削除
+  // ----------------------------------------------------------
+  // Prevent chart overlap
+  // グラフ重複防止
+  // ==========================================================
+  if (weatherChart) {
+    weatherChart.destroy();
+  }
+
+
+  // ==========================================================
+  // Create Chart.js humidity graph
+  // Chart.js 湿度グラフ生成
+  // ==========================================================
+  weatherChart = new Chart(ctx, {
+
+    // ========================================================
+    // Graph type
+    // グラフ種類
+    // ========================================================
+    type: "line",
+
+    data: {
+
+      // ======================================================
+      // X-axis labels
+      // X軸ラベル
+      // ======================================================
+      labels: lastLabels,
+
+      datasets: [
+
+        // ====================================================
+        // Humidity dataset
+        // 湿度データセット
+        // ====================================================
+        {
+          label: "Humidity % / 湿度",
+
+          data: lastHumidity,
+
+          // Graph line color
+          // グラフ線色
+          borderColor: "#ff9f40",
+
+          // Point/background color
+          // 点/背景色
+          backgroundColor: "#ff9f40",
+
+          borderWidth: 2,
+
+          // Straight line
+          // 直線表示
+          tension: 0,
+
+          yAxisID: "y",
+
+
+          // ==================================================
+          // Point display control
+          // 点表示制御
+          // --------------------------------------------------
+          // Mobile:
+          //   Hide all points
+          //
+          // Desktop:
+          //   Show points every hour only
+          //
+          // モバイル:
+          //   全点非表示
+          //
+          // デスクトップ:
+          //   1時間ごとのみ点表示
+          // ==================================================
+          pointRadius: function(context) {
+
+            const label =
+              context.chart.data.labels[context.dataIndex];
+
+            // Hide all points on mobile
+            // モバイルは全部非表示
+            if (window.innerWidth <= 600) {
+              return 0;
+            }
+
+            // Show point every hour
+            // 1時間ごとだけ点を表示
+            if (label.endsWith(":00")) {
+              return 4;
+            }
+
+            // No point
+            // 点なし
+            return 0;
+          },
+        }
+      ]
+    },
+
+
+    // ========================================================
+    // Chart options
+    // グラフオプション
+    // ========================================================
+    options: {
+
+      // Auto resize
+      // 自動リサイズ
+      responsive: true,
+
+      // Allow flexible height
+      // 高さ自由調整
+      maintainAspectRatio: false,
+
+      // Do not connect null values
+      // null値を線で結ばない
+      spanGaps: false,
+
+      plugins: {
+
+        // ====================================================
+        // Legend settings
+        // 凡例設定
+        // ====================================================
+        legend: {
+
+          labels: {
+            color: "white"
+          }
+        },
+
+
+        // ====================================================
+        // Graph title
+        // グラフタイトル
+        // ====================================================
+        title: {
+
+          display: false
+
+        }
+      },
+
+
+      // ======================================================
+      // Axis settings
+      // 軸設定
+      // ======================================================
+      scales: {
+
+        // ====================================================
+        // X-axis
+        // X軸
+        // ====================================================
+        x: {
+
+          ticks: {
+
+            color: "white",
+
+            // Do not auto skip labels
+            // ラベル自動間引き禁止
+            autoSkip: false,
+
+
+            // ================================================
+            // Show labels every hour only
+            // 1時間ごとのみラベル表示
+            // ================================================
+            callback: function(value, index) {
+            
+              const label = this.getLabelForValue(value);
+            
+              // Mobile: show labels every 2 hours
+              // スマホでは2時間おきに表示
+              if (window.innerWidth <= 600) {
+                const hour = parseInt(label.substring(0, 2), 10);
+            
+                if (label.endsWith(":00") && hour % 2 === 0) {
+                  return label;
+                }
+            
+                return "";
+              }
+            
+              // Desktop: show labels every hour
+              // PCでは1時間おきに表示
+              if (label.endsWith(":00")) {
+                return label;
+              }
+            
+              return "";
+            }
+          },
+
+
+          // ==================================================
+          // X-axis grid control
+          // X軸グリッド制御
+          // --------------------------------------------------
+          // Draw grid every hour only
+          // 1時間ごとのみグリッド表示
+          // ==================================================
+          grid: {
+
+            color: function(context) {
+
+              const label =
+                context.chart.data.labels[context.index];
+
+              if (label && label.endsWith(":00")) {
+                return "#555";
+              }
+
+              return "rgba(0,0,0,0)";
+            }
+          }
+        },
+
+
+        // ====================================================
+        // Left Y-axis
+        // 左Y軸
+        // ----------------------------------------------------
+        // Humidity range:
+        // 湿度範囲:
+        //
+        // 0 - 100 %
+        // ====================================================
+        y: {
+
+          position: "left",
+
+          min: 0,
+
+          max: 100,
+
+          ticks: {
+
+            color: "white"
+          },
+
+          grid: {
+
+            color: "#555"
+          }
+        },
+
+
+        // ====================================================
+        // Right Y-axis
+        // 右Y軸
+        // ----------------------------------------------------
+        // Secondary axis
+        // 補助軸
+        // ====================================================
+        y1: {
+
+          position: "right",
+
+          min: 0,
+
+          max: 100,
+
+          ticks: {
+
+            color: "white"
+          },
+
+          // Prevent duplicate grid drawing
+          // グリッド重複描画防止
+          grid: {
+
+            drawOnChartArea: false
+          }
+        }
+      }
+    }
+  });
+}
+
+// ============================================================
+// Show humidity chart
+// 湿度グラフ表示
+// ------------------------------------------------------------
+// Called when the Humidity button is clicked
+// Humidityボタンが押された時に呼ばれる
+// ============================================================
+function showHumidityChart() {
+  drawHumidityChart();
+}
+
+
+// ============================================================
+// Draw pressure chart
+// 気圧グラフ描画
+// ------------------------------------------------------------
+// Displays pressure history using Chart.js
+// Chart.js を使用して気圧履歴を表示する
+// ============================================================
+function drawPressureChart() {
+
+  // Current chart mode
+  // 現在のグラフモード
+  chartMode = "pressure";
+
+  // Get canvas context
+  // canvasコンテキスト取得
+  const ctx = document.getElementById("weatherChart").getContext("2d");
+
+  // Destroy previous chart
+  // 前回グラフ削除
+  if (weatherChart) {
+    weatherChart.destroy();
+  }
+
+  // Create pressure chart
+  // 気圧グラフ作成
+  weatherChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: lastLabels,
+      datasets: [
+        {
+          // Pressure data
+          // 気圧データ
+          label: "Pressure hPa / 気圧",
+          data: lastPressure,
+
+          // Line and point color
+          // 線と点の色
+          borderColor: "#ffcd56",
+          backgroundColor: "#ffcd56",
+
+          borderWidth: 2,
+          tension: 0,
+          yAxisID: "y",
+
+          // Show points only every hour on desktop
+          // デスクトップでは1時間ごとだけ点を表示
+          pointRadius: function(context) {
+
+            const label = context.chart.data.labels[context.dataIndex];
+
+            // Hide all points on mobile
+            // モバイルは全部非表示
+            if (window.innerWidth <= 600) {
+              return 0;
+            }
+
+            // Show point every hour
+            // 1時間ごとだけ点を表示
+            if (label.endsWith(":00")) {
+              return 4;
+            }
+
+            // No point
+            // 点なし
+            return 0;
+          },
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      spanGaps: false,
+
+      plugins: {
+      
+        legend: {
+          labels: {
+            color: "white"
+          }
+        },
+      
+        title: {
+          display: false
+        }
+      },
+
+      scales: {
+        x: {
+          ticks: {
+            color: "white",
+            autoSkip: false,
+
+            // Show X-axis labels only every hour
+            // X軸ラベルは1時間ごとのみ表示
+            callback: function(value, index) {
+            
+              const label = this.getLabelForValue(value);
+            
+              // Mobile: show labels every 2 hours
+              // スマホでは2時間おきに表示
+              if (window.innerWidth <= 600) {
+                const hour = parseInt(label.substring(0, 2), 10);
+            
+                if (label.endsWith(":00") && hour % 2 === 0) {
+                  return label;
+                }
+            
+                return "";
+              }
+            
+              // Desktop: show labels every hour
+              // PCでは1時間おきに表示
+              if (label.endsWith(":00")) {
+                return label;
+              }
+            
+              return "";
+            }
+          },
+
+          // Show grid lines only every hour
+          // グリッド線は1時間ごとのみ表示
+          grid: {
+            color: function(context) {
+              const label = context.chart.data.labels[context.index];
+
+              if (label && label.endsWith(":00")) {
+                return "#555";
+              }
+
+              return "rgba(0,0,0,0)";
+            }
+          }
+        },
+
+        // Left Y-axis
+        // 左Y軸
+        y: {
+          position: "left",
+          min: 850,
+          max: 1050,
+          ticks: {
+            color: "white"
+          },
+          grid: {
+            color: "#555"
+          }
+        },
+
+        // Right Y-axis
+        // 右Y軸
+        y1: {
+          position: "right",
+          min: 850,
+          max: 1050,
+          ticks: {
+            color: "white"
+          },
+          grid: {
+            drawOnChartArea: false
+          }
+        }
+      }
+    }
+  });
+}
+
+
+// ============================================================
+// Show main temperature chart
+// メイン温度グラフ表示
+// ============================================================
+function showMainChart() {
+  drawMainChart();
+}
+
+
+// ============================================================
+// Show pressure chart
+// 気圧グラフ表示
+// ============================================================
+function showPressureChart() {
+  drawPressureChart();
+}
+
+// ============================================================
+// Schedule history graph update
+// 履歴グラフ更新スケジュール
+// ------------------------------------------------------------
+// Updates the graph every 10 minutes
+// グラフを10分ごとに更新する
+//
+// The update is delayed slightly after the 10-minute boundary
+// so that the server has enough time to write history.csv.
+// 10分境界の直後ではなく少し遅らせて読み込むことで、
+// サーバー側の history.csv 書き込み完了を待つ
+// ============================================================
+function scheduleHistoryUpdate() {
+
+  // ==========================================================
+  // Current time
+  // 現在時刻
+  // ==========================================================
+  const now = new Date();
+
+  // Create next update time based on current time
+  // 現在時刻を基準に次回更新時刻を作成
+  const next = new Date(now);
+
+
+  // ==========================================================
+  // Reset seconds and milliseconds
+  // 秒とミリ秒を0にする
+  // ==========================================================
+  next.setSeconds(0);
+  next.setMilliseconds(0);
+
+
+  // ==========================================================
+  // Calculate next 10-minute boundary
+  // 次の10分境界を計算
+  // ----------------------------------------------------------
+  // Example:
+  // 例:
+  //
+  // 12:03 -> 12:10
+  // 12:17 -> 12:20
+  // 12:58 -> 13:00
+  // ==========================================================
+  const m = now.getMinutes();
+
+  const nextMin = Math.floor(m / 10) * 10 + 10;
+
+
+  // ==========================================================
+  // Handle hour rollover
+  // 時間繰り上がり処理
+  // ==========================================================
+  if (nextMin >= 60) {
+
+    next.setHours(now.getHours() + 1);
+
+    next.setMinutes(0);
+
+  } else {
+
+    next.setMinutes(nextMin);
+  }
+
+
+  // ==========================================================
+  // Delay after 10-minute boundary
+  // 10分境界後の遅延
+  // ----------------------------------------------------------
+  // Current setting: 10 seconds after boundary
+  // 現在設定: 10分境界から10秒後
+  //
+  // Example:
+  // 例:
+  //
+  // 12:10:10
+  // 12:20:10
+  //
+  // NOTE:
+  // The old comment said 70 seconds, but this code uses 10000 ms.
+  // 以前のコメントは70秒でしたが、このコードでは10000ms = 10秒です。
+  // ==========================================================
+  next.setTime(next.getTime() + 10000);
+
+
+  // ==========================================================
+  // Calculate delay time until next update
+  // 次回更新までの待ち時間を計算
+  // ==========================================================
+  const delay = next.getTime() - now.getTime();
+
+
+  // ==========================================================
+  // Execute update after delay
+  // 指定時間後に更新実行
+  // ----------------------------------------------------------
+  // After updating, schedule the next update again
+  // 更新後、次回更新を再スケジュールする
+  // ==========================================================
+  setTimeout(() => {
+
+    loadHistory();
+
+    scheduleHistoryUpdate();
+
+  }, delay);
+}
+
+
+// ============================================================
+// Initial load
+// 初回読み込み
+// ============================================================
+
+// Load latest sensor values
+// 最新センサー値を読み込む
+loadLatest();
+
+// Load history graph data
+// 履歴グラフデータを読み込む
+loadHistory();
+
+// Update clock display once
+// 時計表示を1回更新
+updateClock();
+
+
+// ============================================================
+// Periodic updates
+// 定期更新
+// ============================================================
+
+// Update current sensor values every 1 minute
+// 現在値を1分ごとに更新
+setInterval(loadLatest, 60000);
+
+// Update clock every 1 second
+// 時計を1秒ごとに更新
+setInterval(updateClock, 1000);
+
+// Update graph every 10 minutes
+// グラフを10分ごとに更新
+scheduleHistoryUpdate();
+
+</script>
+</body>
+</html>
