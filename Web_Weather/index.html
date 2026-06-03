@@ -288,7 +288,45 @@ h1 {
     <button onclick="showHumidityChart()">Humidity / 湿度</button>
     <button onclick="showPressureChart()">Pressure / 気圧</button>
   </div>
+  <div style="
+    margin-bottom:8px;
+    color:white;
+    font-size:14px;
+  ">
+  
+    Day:
+  
+    <input
+      id="dayOffset"
+      type="number"
+      min="0"
+      max="30"
+      value="0"
+      style="
+        width:55px;
+        font-size:16px;
+        text-align:center;
+      "
+      onchange="loadHistory()"
+    >
+  
+    days ago
 
+    <button
+      onclick="
+        document.getElementById('dayOffset').value = 0;
+        loadHistory();
+      "
+      style="
+        margin-left:8px;
+        font-size:14px;
+        padding:2px 8px;
+      "
+    >
+      TODAY
+    </button>
+
+  </div>
   <!-- Chart.js canvas -->
   <!-- Chart.js グラフ描画エリア -->
   <canvas id="weatherChart" height="320"></canvas>
@@ -488,71 +526,37 @@ function updateClock() {
 // ============================================================
 function loadHistory() {
 
-  // ==========================================================
-  // Load CSV file
-  // CSVファイル読み込み
-  // ----------------------------------------------------------
-  // "?ts=" prevents browser cache
-  // "?ts=" はブラウザーキャッシュ防止
-  //
-  // cache: "no-store"
-  // Force browser not to use cached CSV
-  // ブラウザーにキャッシュを使わせない
-  // ==========================================================
   fetch("history.csv?ts=" + Date.now(), { cache: "no-store" })
 
-    // ========================================================
-    // Convert HTTP response to text
-    // HTTP応答をテキストへ変換
-    // ========================================================
     .then(response => response.text())
 
-    // ========================================================
-    // Process CSV text
-    // CSVテキスト処理
-    // ========================================================
     .then(text => {
 
-      // Split CSV into lines
-      // CSVを行ごとに分割
       const lines = text.trim().split("\n");
 
       // Remove header line
       // ヘッダー行を削除
       lines.shift();
 
-
-      // ======================================================
-      // Prepare graph arrays
-      // グラフ用配列準備
-      // ======================================================
       const labels = [];
       const shade = [];
       const sun = [];
       const humidity = [];
       const pressure = [];
 
-
       // ======================================================
       // Create fixed 24-hour labels
       // 24時間固定ラベル作成
-      // ------------------------------------------------------
-      // 00:00, 00:10, 00:20 ... 23:50
       // ======================================================
       for (let h = 0; h < 24; h++) {
 
         for (let m = 0; m < 60; m += 10) {
 
-          const hh = String(h).padStart(2, "0");
-          const mm = String(m).padStart(2, "0");
+          const labelHour = String(h).padStart(2, "0");
+          const labelMin  = String(m).padStart(2, "0");
 
-          labels.push(`${hh}:${mm}`);
+          labels.push(`${labelHour}:${labelMin}`);
 
-          // Initialize all data as null
-          // 全データを null で初期化
-          //
-          // null creates gaps in Chart.js line graph
-          // null にすると Chart.js の折れ線が途切れる
           shade.push(null);
           sun.push(null);
           humidity.push(null);
@@ -560,13 +564,38 @@ function loadHistory() {
         }
       }
 
-
       // ======================================================
-      // Previous valid data time
-      // 前回の有効データ時刻
+      // Get selected day offset
+      // 表示する日付のオフセット取得
+      // 0 = today, 1 = yesterday, ... 30 = 30 days ago
+      // 0 = 今日, 1 = 昨日, ... 30 = 30日前
       // ======================================================
-      let prevTime = null;
+      const offsetInput = document.getElementById("dayOffset");
 
+      let dayOffset = 0;
+
+      if (offsetInput) {
+        dayOffset = parseInt(offsetInput.value, 10);
+
+        if (isNaN(dayOffset)) {
+          dayOffset = 0;
+        }
+
+        if (dayOffset < 0) {
+          dayOffset = 0;
+        }
+
+        if (dayOffset > 30) {
+          dayOffset = 30;
+        }
+
+        offsetInput.value = dayOffset;
+      }
+
+      const targetDate = new Date();
+
+      targetDate.setHours(0, 0, 0, 0);
+      targetDate.setDate(targetDate.getDate() - dayOffset);
 
       // ======================================================
       // Process each CSV line
@@ -574,172 +603,88 @@ function loadHistory() {
       // ======================================================
       lines.forEach(line => {
 
-        // Split CSV columns
-        // CSV列分割
+        if (!line.trim()) return;
+
         const cols = line.trim().split(",");
 
-        // ====================================================
-        // CSV format
-        // CSV形式
-        // ----------------------------------------------------
+        // CSV:
         // 0 = date
         // 1 = time
-        // 2 = shade temperature
-        // 3 = sun temperature
+        // 2 = shade_temp
+        // 3 = sun_temp
         // 4 = humidity
         // 5 = pressure
-        // ====================================================
         if (cols.length < 6) return;
-        
-        
-        // ====================================================
-        // Parse date and time
-        // 日付と時刻を解析
-        // ----------------------------------------------------
-        // Example:
-        // 2026/5/30,21:20
-        // ====================================================
+
         const dateStr = cols[0].trim();
-        
         const timeStr = cols[1].trim();
-        
+
         const dateParts = dateStr.replace(/-/g, "/").split("/");
-        
         const timeParts = timeStr.split(":");
-        
+
         if (dateParts.length < 3) return;
-        
         if (timeParts.length < 2) return;
-        
-        const y  = parseInt(dateParts[0]);
-        
-        const mo = parseInt(dateParts[1]) - 1;
-        
-        const d  = parseInt(dateParts[2]);
-        
-        const hh = parseInt(timeParts[0]);
-        
-        const mm = parseInt(timeParts[1]);
-        
-        const dateObj = new Date(y, mo, d, hh, mm, 0);
-        
-        
-        // Ignore invalid date
-        // 無効日時無視
+
+        const year  = parseInt(dateParts[0], 10);
+        const month = parseInt(dateParts[1], 10) - 1;
+        const day   = parseInt(dateParts[2], 10);
+
+        const hour   = parseInt(timeParts[0], 10);
+        const minute = parseInt(timeParts[1], 10);
+
+        const dateObj = new Date(year, month, day, hour, minute, 0);
+
         if (isNaN(dateObj.getTime())) return;
-        
-
 
         // ====================================================
-        // Show only today's data
-        // 今日のデータだけ表示
+        // Show selected day's data only
+        // 選択日のデータだけ表示
         // ====================================================
-        const now = new Date();
-
         if (
-          dateObj.getFullYear() !== now.getFullYear() ||
-          dateObj.getMonth() !== now.getMonth() ||
-          dateObj.getDate() !== now.getDate()
+          dateObj.getFullYear() !== targetDate.getFullYear() ||
+          dateObj.getMonth() !== targetDate.getMonth() ||
+          dateObj.getDate() !== targetDate.getDate()
         ) {
           return;
         }
 
-
         // ====================================================
-        // Missing data check
-        // 欠損データ確認
-        // ----------------------------------------------------
-        // If there is a gap of more than 10 minutes,
-        // keep graph data as null during that period.
-        //
-        // 前回データから10分以上空いた場合、
-        // その間のグラフデータは null のままにする。
-        //
-        // NOTE:
-        // 現在は24時間固定配列を先に作っているため、
-        // 通常ここで labels.push() は不要です。
+        // Round time to nearest 10 minutes
+        // 時刻を10分単位に丸める
         // ====================================================
-        if (prevTime !== null) {
+        const labelDate = new Date(dateObj);
 
-          let t = new Date(prevTime.getTime() + 10 * 60 * 1000);
+        let roundedMin = Math.round(labelDate.getMinutes() / 10) * 10;
 
-
-        }
-
-
-        // ====================================================
-        // Round display time to nearest 10 minutes
-        // 表示用時刻を10分単位に丸める
-        // ====================================================
-        let labelDate = new Date(dateObj);
-
-        let roundedMin =
-          Math.round(labelDate.getMinutes() / 10) * 10;
-
-
-        // If rounded minute becomes 60, move to next hour
-        // 丸めた分が60になった場合は次の時へ進める
         if (roundedMin >= 60) {
-
           labelDate.setHours(labelDate.getHours() + 1);
-
           roundedMin = 0;
         }
 
         labelDate.setMinutes(roundedMin, 0, 0);
 
-
-        // ====================================================
-        // Create array index from time
-        // 時刻から配列インデックスを作成
-        // ----------------------------------------------------
-
-
         const index =
           labelDate.getHours() * 6 + (roundedMin / 10);
 
+        if (index < 0 || index >= labels.length) return;
 
-        // ====================================================
-        // Store CSV values into graph arrays
-        // CSV値をグラフ配列へ格納
-        // ====================================================
         shade[index]    = parseFloat(cols[2]);
         sun[index]      = parseFloat(cols[3]);
         humidity[index] = parseFloat(cols[4]);
         pressure[index] = parseFloat(cols[5]);
-
-
-        // Save current time as previous time
-        // 現在時刻を前回時刻として保存
-        prevTime = dateObj;
       });
 
-
-      // ======================================================
-      // Save processed data to global arrays
-      // 処理済みデータをグローバル配列へ保存
-      // ======================================================
       lastLabels = labels;
       lastShade = shade;
       lastSun = sun;
       lastHumidity = humidity;
       lastPressure = pressure;
 
-
-      // ======================================================
-      // Redraw current chart mode
-      // 現在のグラフモードで再描画
-      // ======================================================
       if (chartMode === "pressure") {
-
         drawPressureChart();
-
       } else if (chartMode === "humidity") {
-
         drawHumidityChart();
-
       } else {
-
         drawMainChart();
       }
     });
@@ -816,7 +761,7 @@ function drawMainChart() {
         // 日陰温度グラフ
         // ====================================================
         {
-          label: "Shade Temp / 日陰",
+          label: "Shade Temp C / 日陰",
 
           data: lastShade,
 
@@ -868,7 +813,7 @@ function drawMainChart() {
         // 日向温度グラフ
         // ====================================================
         {
-          label: "Sun Temp /太陽直下",
+          label: "Sun Temp C / 太陽直下",
 
           data: lastSun,
 
@@ -940,12 +885,9 @@ function drawMainChart() {
         // ====================================================
         title: {
 
-          display: true,
-
-          text: "Temperature / 温度",
-
-          color: "white"
+          display: false
         }
+
       },
 
 
@@ -1144,7 +1086,7 @@ function drawHumidityChart() {
         // 湿度データセット
         // ====================================================
         {
-          label: "Humidity %",
+          label: "Humidity % / 湿度",
 
           data: lastHumidity,
 
@@ -1245,11 +1187,8 @@ function drawHumidityChart() {
         // ====================================================
         title: {
 
-          display: true,
+          display: false
 
-          text: "Humidity / 湿度",
-
-          color: "white"
         }
       },
 
@@ -1426,6 +1365,20 @@ function drawPressureChart() {
     weatherChart.destroy();
   }
 
+  // ====================================================
+  // Auto pressure scale
+  // 気圧自動スケール
+  // ====================================================
+  const validPressure = lastPressure.filter(v => v !== null);
+
+  const pMin = Math.min(...validPressure);
+  const pMax = Math.max(...validPressure);
+
+  // 少し余裕を持たせる
+  const graphMin = Math.floor(pMin - 1);
+  const graphMax = Math.ceil(pMax + 1);
+
+
   // Create pressure chart
   // 気圧グラフ作成
   weatherChart = new Chart(ctx, {
@@ -1436,7 +1389,7 @@ function drawPressureChart() {
         {
           // Pressure data
           // 気圧データ
-          label: "Pressure hPa",
+          label: "Pressure hPa / 気圧",
           data: lastPressure,
 
           // Line and point color
@@ -1479,13 +1432,15 @@ function drawPressureChart() {
       spanGaps: false,
 
       plugins: {
+      
         legend: {
-          labels: { color: "white" }
+          labels: {
+            color: "white"
+          }
         },
+      
         title: {
-          display: true,
-          text: "Pressure / 気圧",
-          color: "white"
+          display: false
         }
       },
 
@@ -1542,8 +1497,8 @@ function drawPressureChart() {
         // 左Y軸
         y: {
           position: "left",
-          min: 850,
-          max: 1050,
+          min: graphMin,
+          max: graphMax,
           ticks: {
             color: "white"
           },
@@ -1556,8 +1511,8 @@ function drawPressureChart() {
         // 右Y軸
         y1: {
           position: "right",
-          min: 850,
-          max: 1050,
+          min: graphMin,
+          max: graphMax,
           ticks: {
             color: "white"
           },
