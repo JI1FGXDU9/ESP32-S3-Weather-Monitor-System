@@ -92,7 +92,7 @@ h1 {
 
   margin: 20px auto;
 
-  padding: 20px 10px 25px 10px;
+  padding: 10px 10px 12px 10px;
 
   border-radius: 10px;
 }
@@ -116,7 +116,7 @@ h1 {
 
   font-size: 48px;
 
-  margin: 5px 0 15px 0;
+  margin: 2px 0 15px 0;
 }
 
 /* ==========================================================
@@ -127,7 +127,7 @@ h1 {
 
   font-size: 24px;
 
-  margin: 10px 0;
+  margin: 4px 0;
 }
 
 /* ==========================================================
@@ -334,6 +334,86 @@ h1 {
 </div>
 
 <script>
+
+// ============================================================
+// Max / Min value display plugin
+// 最高・最低値表示プラグイン
+// ============================================================
+const maxMinLabelPlugin = {
+  id: "maxMinLabel",
+
+  afterDraw(chart, args, options) {
+    if (!options) return;
+
+    const ctx = chart.ctx;
+    const chartArea = chart.chartArea;
+
+    ctx.save();
+
+    const isMobile = window.innerWidth <= 600;
+
+    ctx.font = isMobile
+      ? "bold 10px Consolas"
+      : "bold 16px Consolas";
+
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+
+    const x = isMobile
+      ? chartArea.right - 70
+      : chartArea.right - 120;
+
+    let y = chartArea.top + 10;
+
+    const lineStep = isMobile ? 10 : 18;
+    const blockGap = isMobile ? 10 : 20;
+    // ==============================
+    // Temperature graph: Sun + Shade
+    // 気温グラフ：日向 + 日陰
+    // ==============================
+    if (
+      options.sunMax !== undefined &&
+      options.sunMin !== undefined &&
+      options.shadeMax !== undefined &&
+      options.shadeMin !== undefined
+    ) {
+      ctx.fillStyle = "#ff6384";
+      ctx.fillText("MAX " + options.sunMax + "°C", x, y);
+      y += lineStep;
+      ctx.fillText("MIN " + options.sunMin + "°C", x, y);
+
+      y += blockGap;
+
+      ctx.fillStyle = "#36a2eb";
+      ctx.fillText("MAX " + options.shadeMax + "°C", x, y);
+      y += lineStep;
+      ctx.fillText("MIN " + options.shadeMin + "°C", x, y);
+
+      ctx.restore();
+      return;
+    }
+
+    // ==============================
+    // Humidity / Pressure graph
+    // 湿度・気圧グラフ
+    // ==============================
+    if (
+      options.maxValue !== undefined &&
+      options.minValue !== undefined &&
+      options.unit !== undefined &&
+      options.color !== undefined
+    ) {
+      ctx.fillStyle = options.color;
+      ctx.fillText("MAX " + options.maxValue + options.unit, x, y);
+      y += lineStep;
+      ctx.fillText("MIN " + options.minValue + options.unit, x, y);
+    }
+
+    ctx.restore();
+  }
+};
+
+Chart.register(maxMinLabelPlugin);
 
 // ============================================================
 // Global chart object
@@ -733,7 +813,23 @@ function drawMainChart() {
     weatherChart.destroy();
   }
 
+  // ====================================================
+  // Calculate max/min temperature
+  // 最高・最低気温を計算
+  // ====================================================
+  const validShade = lastShade.filter(v => v !== null);
+  const validSun   = lastSun.filter(v => v !== null);
+  
+  const shadeMax = Math.max(...validShade).toFixed(1);
+  const shadeMin = Math.min(...validShade).toFixed(1);
+  
+  const sunMax = Math.max(...validSun).toFixed(1);
+  const sunMin = Math.min(...validSun).toFixed(1);
 
+  const validHumidity = lastHumidity.filter(v => v !== null);
+  
+  const humidityMax = Math.max(...validHumidity).toFixed(1);
+  const humidityMin = Math.min(...validHumidity).toFixed(1);
   // ==========================================================
   // Create Chart.js graph
   // Chart.js グラフ生成
@@ -761,7 +857,7 @@ function drawMainChart() {
         // 日陰温度グラフ
         // ====================================================
         {
-          label: "Shade Temp C / 日陰",
+          label: "Shade Temp / 日陰",
 
           data: lastShade,
 
@@ -813,7 +909,7 @@ function drawMainChart() {
         // 日向温度グラフ
         // ====================================================
         {
-          label: "Sun Temp C / 太陽直下",
+          label: "Sun Temp / 太陽直下",
 
           data: lastSun,
 
@@ -868,6 +964,13 @@ function drawMainChart() {
       spanGaps: false,
 
       plugins: {
+
+        maxMinLabel: {
+          shadeMax: shadeMax,
+          shadeMin: shadeMin,
+          sunMax: sunMax,
+          sunMin: sunMin
+        },
 
         // ====================================================
         // Legend settings
@@ -1058,6 +1161,10 @@ function drawHumidityChart() {
     weatherChart.destroy();
   }
 
+  const validHumidity = lastHumidity.filter(v => v !== null);
+  
+  const humidityMax = Math.max(...validHumidity).toFixed(1);
+  const humidityMin = Math.min(...validHumidity).toFixed(1);
 
   // ==========================================================
   // Create Chart.js humidity graph
@@ -1168,18 +1275,24 @@ function drawHumidityChart() {
       spanGaps: false,
 
       plugins: {
-
+      
+        maxMinLabel: {
+          maxValue: humidityMax,
+          minValue: humidityMin,
+          unit: "%",
+          color: "#ff9f40"
+        },
+      
         // ====================================================
         // Legend settings
         // 凡例設定
         // ====================================================
         legend: {
-
+      
           labels: {
             color: "white"
           }
         },
-
 
         // ====================================================
         // Graph title
@@ -1374,6 +1487,9 @@ function drawPressureChart() {
   const pMin = Math.min(...validPressure);
   const pMax = Math.max(...validPressure);
 
+  const pressureMax = pMax.toFixed(1);
+  const pressureMin = pMin.toFixed(1);
+
   // 少し余裕を持たせる
   const graphMin = Math.floor(pMin - 1);
   const graphMax = Math.ceil(pMax + 1);
@@ -1433,7 +1549,15 @@ function drawPressureChart() {
 
       plugins: {
       
+        maxMinLabel: {
+          maxValue: pressureMax,
+          minValue: pressureMin,
+          unit: "hPa",
+          color: "#ffcd56"
+        },
+            
         legend: {
+
           labels: {
             color: "white"
           }
