@@ -130,23 +130,35 @@ h1 {
   margin: 4px 0;
 }
 
+.canvas-wrap {
+  position: relative;
+  height: 360px;
+  background: #303030;
+}
+
 /* ==========================================================
    Graph display area
    グラフ表示エリア
    ========================================================== */
 .chart-box {
-
   background: #303030;
-
   max-width: 1000px;
-
   margin: 20px auto;
-
-  padding: 15px;
-
+  padding: 15px 15px 0px 15px;
   border-radius: 10px;
+  height: auto;
+}
 
-  height: 420px;
+.canvas-wrap {
+  position: relative;
+  height: 450px;
+  background: #303030;
+}
+
+#weatherChart {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 /* ==========================================================
@@ -329,7 +341,9 @@ h1 {
   </div>
   <!-- Chart.js canvas -->
   <!-- Chart.js グラフ描画エリア -->
-  <canvas id="weatherChart" height="320"></canvas>
+<div class="canvas-wrap">
+    <canvas id="weatherChart"></canvas>
+</div>
 
 </div>
 
@@ -350,7 +364,7 @@ const maxMinLabelPlugin = {
 
     ctx.save();
 
-    const isMobile = window.innerWidth <= 600;
+    const isMobile = window.matchMedia("(max-width: 600px)").matches;
 
     ctx.font = isMobile
       ? "bold 10px Consolas"
@@ -365,8 +379,9 @@ const maxMinLabelPlugin = {
 
     let y = chartArea.top + 10;
 
-    const lineStep = isMobile ? 10 : 18;
-    const blockGap = isMobile ? 10 : 20;
+    const lineStep = isMobile ? 11 : 18;
+    const blockGap = isMobile ? 11 : 18;
+    const valueX = isMobile ? x + 28 : x + 37;
     // ==============================
     // Temperature graph: Sun + Shade
     // 気温グラフ：日向 + 日陰
@@ -377,37 +392,33 @@ const maxMinLabelPlugin = {
       options.shadeMax !== undefined &&
       options.shadeMin !== undefined
     ) {
+    
+      // Sun Temp
+      // 日向温度
       ctx.fillStyle = "#ff6384";
-      ctx.fillText(
-        "MAX " + String(options.sunMax).padStart(5, " ") + "°C",
-        x,
-        y
-      );
-      
+    
+      ctx.fillText("MAX:", x, y);
+      ctx.fillText(options.sunMax + "°C", valueX, y);
+    
       y += lineStep;
-      
-      ctx.fillText(
-        "MIN " + String(options.sunMin).padStart(5, " ") + "°C",
-        x,
-        y
-      );
-      
+    
+      ctx.fillText("MIN:", x, y);
+      ctx.fillText(options.sunMin + "°C", valueX, y);
+    
       y += blockGap;
+    
+      // Shade Temp
+      // 日陰温度
       ctx.fillStyle = "#36a2eb";
-      ctx.fillText(
-        "MAX " + String(options.shadeMax).padStart(5, " ") + "°C",
-        x,
-        y
-      );
-      
+    
+      ctx.fillText("MAX:", x, y);
+      ctx.fillText(options.shadeMax + "°C", valueX, y);
+    
       y += lineStep;
-      
-      ctx.fillText(
-        "MIN " + String(options.shadeMin).padStart(5, " ") + "°C",
-        x,
-        y
-      );
-
+    
+      ctx.fillText("MIN:", x, y);
+      ctx.fillText(options.shadeMin + "°C", valueX, y);
+    
       ctx.restore();
       return;
     }
