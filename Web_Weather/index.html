@@ -378,16 +378,35 @@ const maxMinLabelPlugin = {
       options.shadeMin !== undefined
     ) {
       ctx.fillStyle = "#ff6384";
-      ctx.fillText("MAX " + options.sunMax + "°C", x, y);
+      ctx.fillText(
+        "MAX " + String(options.sunMax).padStart(5, " ") + "°C",
+        x,
+        y
+      );
+      
       y += lineStep;
-      ctx.fillText("MIN " + options.sunMin + "°C", x, y);
-
+      
+      ctx.fillText(
+        "MIN " + String(options.sunMin).padStart(5, " ") + "°C",
+        x,
+        y
+      );
+      
       y += blockGap;
-
       ctx.fillStyle = "#36a2eb";
-      ctx.fillText("MAX " + options.shadeMax + "°C", x, y);
+      ctx.fillText(
+        "MAX " + String(options.shadeMax).padStart(5, " ") + "°C",
+        x,
+        y
+      );
+      
       y += lineStep;
-      ctx.fillText("MIN " + options.shadeMin + "°C", x, y);
+      
+      ctx.fillText(
+        "MIN " + String(options.shadeMin).padStart(5, " ") + "°C",
+        x,
+        y
+      );
 
       ctx.restore();
       return;
@@ -403,10 +422,22 @@ const maxMinLabelPlugin = {
       options.unit !== undefined &&
       options.color !== undefined
     ) {
-      ctx.fillStyle = options.color;
-      ctx.fillText("MAX " + options.maxValue + options.unit, x, y);
-      y += lineStep;
-      ctx.fillText("MIN " + options.minValue + options.unit, x, y);
+    ctx.fillStyle = options.color;
+    
+    ctx.fillText(
+      "MAX " + String(options.maxValue).padStart(5, " ") + options.unit,
+      x,
+      y
+    );
+    
+    y += lineStep;
+    
+    ctx.fillText(
+      "MIN " + String(options.minValue).padStart(5, " ") + options.unit,
+      x,
+      y
+    );
+
     }
 
     ctx.restore();
