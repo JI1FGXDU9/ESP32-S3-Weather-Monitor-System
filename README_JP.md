@@ -1,6 +1,6 @@
 # README_JP.md
 
-# ESP32 Weather Monitor System Ver0.0.1
+# ESP32 Weather Monitor System Ver0.0.3
 
 * [English README](README.md)
 * 日本語（このページ）
@@ -31,7 +31,7 @@ ESP32-S3 を使用した気象観測システムです。
 
 # システム構成
 
-## ESP32_Weather_Monitor_Ver0.0.1.ino
+## ESP32_Weather_Monitor_Ver0.0.3.ino
 
 ESP32-S3側のメインプログラムです。
 
@@ -74,6 +74,7 @@ ESP32の設定を変更するためのWindows用GUIツールです。
 * WiFi設定変更
 * Upload URL変更
 * 固定IP設定変更
+* センサーの選択
 
 ### 必要ライブラリ
 
@@ -114,9 +115,10 @@ ESP32から送信されたデータを受信するPHPプログラムです。
 
 ---
 
-# Web_Weather/index.html
+# Web_Weather/index_ver0.0.4.html
 
 ブラウザーで気象データを表示するWebページです。
+index.htmlとして保存してください。
 
 ### 主な機能
 
@@ -124,10 +126,12 @@ ESP32から送信されたデータを受信するPHPプログラムです。
 * 日向・日陰温度表示
 * 湿度表示
 * 気圧表示
+* 不快指数の表示
 * Chart.js使用
 * スマホ対応
 * 日付切り替え表示
 * 24時間グラフ表示
+* 2つのユニットからのデーターを表示
 
 ### 表示内容
 

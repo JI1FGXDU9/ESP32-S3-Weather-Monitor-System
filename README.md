@@ -1,6 +1,6 @@
 # README.md
 
-# ESP32 Weather Monitor System Ver0.0.1
+# ESP32 Weather Monitor System Ver0.0.3
 
 ## Language
 
@@ -31,7 +31,7 @@ In particular, it can record in real time:
 
 # System Configuration
 
-## ESP32_Weather_Monitor_Ver0.0.1.ino
+## ESP32_Weather_Monitor_Ver0.0.3.ino
 
 This is the main program running on the ESP32-S3.
 
@@ -74,6 +74,7 @@ This is a Windows GUI tool used to configure the ESP32.
 * WiFi configuration
 * Upload URL configuration
 * Static IP configuration
+* Sensor selection
 
 ### Required Library
 
@@ -128,6 +129,7 @@ This web page displays weather data in a browser.
 * Smartphone compatible
 * Date switching display
 * 24-hour graph display
+* Display data from two units
 
 ### Graph Contents
 
