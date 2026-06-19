@@ -75,9 +75,11 @@ body {
    ========================================================== */
 h1 {
 
-  margin-top: 10px;
+  margin: 6px 0;
 
-  font-size: 32px;
+  font-size: 26px;
+
+  line-height: 1.0;
 }
 
 /* ==========================================================
@@ -90,9 +92,9 @@ h1 {
 
   max-width: 430px;
 
-  margin: 20px auto;
+  margin: 8px auto;
 
-  padding: 10px 10px 12px 10px;
+  padding: 6px;
 
   border-radius: 10px;
 }
@@ -103,7 +105,11 @@ h1 {
    ========================================================== */
 .label {
 
-  font-size: 16px;
+  font-size: 13px;
+
+  line-height: 1.0;
+
+  margin: 0;
 }
 
 /* ==========================================================
@@ -114,9 +120,11 @@ h1 {
 
   color: orange;
 
-  font-size: 48px;
+  font-size: 40px;
 
-  margin: 2px 0 15px 0;
+  line-height: 1.0;
+
+  margin: 0 0 4px 0;
 }
 
 /* ==========================================================
@@ -125,15 +133,11 @@ h1 {
    ========================================================== */
 .item {
 
-  font-size: 24px;
+  font-size: 16px;
 
-  margin: 4px 0;
-}
+  line-height: 1.0;
 
-.canvas-wrap {
-  position: relative;
-  height: 360px;
-  background: #303030;
+  margin: 1px 0;
 }
 
 /* ==========================================================
@@ -141,26 +145,37 @@ h1 {
    グラフ表示エリア
    ========================================================== */
 .chart-box {
+
   background: #303030;
+
   max-width: 1000px;
-  margin: 20px auto;
-  padding: 15px 15px 0px 15px;
+
+  margin: 8px auto;
+
+  padding: 6px 6px 0 6px;
+
   border-radius: 10px;
+
   height: auto;
 }
 
 .canvas-wrap {
+
   position: relative;
-  height: 450px;
+
+  height: 420px;
+
   background: #303030;
 }
 
 #weatherChart {
+
   display: block;
+
   width: 100% !important;
+
   height: 100% !important;
 }
-
 /* ==========================================================
    Shade temperature color
    日陰温度色
@@ -253,37 +268,221 @@ h1 {
      ========================================================== -->
 <div class="card">
 
-<!-- Shade temperature label -->
-<!-- 日陰温度ラベル -->
-<div class="label">SHADE TEMP / 日陰</div>
 
-<!-- Main shade temperature display -->
-<!-- メインの日陰温度表示 -->
-<div class="main-temp">
-  <span id="shade_temp" class="shade-value">--.- °C</span>
-</div>
 
-<!-- Sun temperature display -->
-<!-- 太陽直下温度表示 -->
-<div class="item">
-  SUN TEMP / 太陽直下:
-  <span id="sun_temp" class="sun-value">--.-</span> °C
-</div>
 
-<!-- Humidity display -->
-<!-- 湿度表示 -->
-<div class="item">
-  HUMIDITY / 湿度　　:
-  <span id="humidity" class="humidity-value">--.-</span> %
-</div>
 
-<!-- Pressure display -->
-<!-- 気圧表示 -->
-<div class="item">
-  PRESSURE / 気圧　　:
-  <span id="pressure" class="pressure-value">----.-</span> hPa
-</div>
 
+
+
+
+
+
+<table
+  border="0"
+  cellspacing="0"
+  cellpadding="0"
+  style="
+    margin:auto;
+    font-size:18px;
+    line-height:1.0;
+  "
+>
+
+<tr>
+  <td
+    style="
+      width:250px;
+      color:white;
+      text-align:right;
+      padding-right:6px;
+      padding-top:2px;
+      padding-bottom:2px;
+    "
+  >
+    Shade Temp:
+  </td>
+
+  <td
+    style="
+      color:white;
+      text-align:left;
+      min-width:90px;
+      padding-top:2px;
+      padding-bottom:2px;
+      font-size:22px;
+      font-weight:bold;
+    "
+  >
+    <span id="shade_temp" class="shade-value">--.-</span> °C
+  </td>
+</tr>
+
+  <tr>
+    <td
+      style="
+        color:white;
+        text-align:right;
+        padding-right:12px;
+      "
+    >
+      Roof Top:
+    </td>
+
+    <td
+      style="
+        color:white;
+        text-align:left;
+        min-width:100px;
+      "
+    >
+      <span id="sun_temp" class="sun-value">--.-</span> °C
+    </td>
+  </tr>
+
+  <tr>
+    <td
+      style="
+        color:white;
+        text-align:right;
+        padding-right:12px;
+      "
+    >
+      Humidity:
+    </td>
+
+    <td
+      style="
+        color:white;
+        text-align:left;
+      "
+    >
+      <span id="humidity" class="humidity-value">--.-</span> %
+    </td>
+  </tr>
+
+  <tr>
+    <td
+      style="
+        width:130px;
+        color:white;
+        text-align:right;
+        padding-right:6px;
+        padding-top:2px;
+        padding-bottom:2px;
+      "
+    >
+      Outdoor Discomfort Index:
+    </td>
+  
+    <td
+      style="
+        text-align:left;
+        padding-top:2px;
+        padding-bottom:2px;
+      "
+    >
+      <span id="discomfort" style="color:#66ff66">--</span>
+    </td>
+  </tr>
+
+  <tr>
+    <td colspan="2" style="height:5px;"></td>
+  </tr>
+
+  <tr>
+    <td
+      style="
+        color:white;
+        text-align:right;
+        padding-right:12px;
+      "
+    >
+      Aircon Room Temp:
+    </td>
+
+    <td
+      style="
+        color:white;
+        text-align:left;
+      "
+    >
+      <span id="indoor_temp" style="color:#66ff66">----</span> °C
+    </td>
+  </tr>
+
+  <tr>
+    <td
+      style="
+        color:white;
+        text-align:right;
+        padding-right:12px;
+      "
+    >
+      Indoor Humidity:
+    </td>
+
+    <td
+      style="
+        color:white;
+        text-align:left;
+      "
+    >
+      <span id="indoor_humidity" style="color:#66ff66">----</span> %
+    </td>
+  </tr>
+
+  <tr>
+    <td
+      style="
+        width:130px;
+        color:white;
+        text-align:right;
+        padding-right:6px;
+        padding-top:2px;
+        padding-bottom:2px;
+      "
+    >
+      Indoor Discomfort Index:
+    </td>
+  
+    <td
+      style="
+        text-align:left;
+        padding-top:2px;
+        padding-bottom:2px;
+      "
+    >
+      <span id="indoor_di" style="color:#66ff66">--</span>
+    </td>
+  </tr>
+
+  <tr>
+    <td colspan="2" style="height:5px;"></td>
+  </tr>
+
+  <tr>
+    <td
+      style="
+        color:white;
+        text-align:right;
+        padding-right:12px;
+      "
+    >
+      Pressure:
+    </td>
+
+    <td
+      style="
+        color:white;
+        text-align:left;
+      "
+    >
+      <span id="pressure" class="pressure-value">----.-</span> hPa
+    </td>
+  </tr>
+
+</table>
 </div>
 
 
@@ -297,19 +496,20 @@ h1 {
   <!-- グラフ切り替えボタン -->
   <div style="margin-bottom:10px;">
     <button onclick="location.href='year.html'">
-  1 Year Graph / 年表示</button>
-    <button onclick="showMainChart()">Temp / 気温</button>
-    <button onclick="showHumidityChart()">Humidity / 湿度</button>
-    <button onclick="showPressureChart()">Pressure / 気圧</button>
+  1 Year Graph</button>
+    <button onclick="showMainChart()">Temp</button>
+    <button onclick="showHumidityChart()">Humidity</button>
+    <button onclick="showPressureChart()">Pressure</button>
+    <button onclick="showIdChart()">Discomfort Index</button>
   </div>
+
   <div style="
     margin-bottom:8px;
     color:white;
     font-size:14px;
   ">
-  
     Day:
-  
+
     <input
       id="dayOffset"
       type="number"
@@ -323,7 +523,7 @@ h1 {
       "
       onchange="loadHistory()"
     >
-  
+
     days ago
 
     <button
@@ -339,14 +539,49 @@ h1 {
     >
       TODAY
     </button>
-
   </div>
+
   <!-- Chart.js canvas -->
   <!-- Chart.js グラフ描画エリア -->
-<div class="canvas-wrap">
+  <div class="canvas-wrap">
     <canvas id="weatherChart"></canvas>
+  </div>
+
+  <!-- Discomfort Index legend -->
+  <!-- 不快指数凡例 -->
+  <div id="diLegend" style="
+    display:none;
+    margin-top:6px;
+    text-align:center;
+    font-size:13px;
+    color:white;
+  ">
+
+  <span style="color:#66ff66;">
+    ■ Below 70 Comfortable
+  </span>
+
+  &nbsp;&nbsp;
+
+  <span style="color:#ffff66;">
+    ■ 71-75 Slightly Uncomfortable
+  </span>
+
+  &nbsp;&nbsp;
+
+  <span style="color:#ff9933;">
+    ■ 76-80 Uncomfortable
+  </span>
+
+  &nbsp;&nbsp;
+
+  <span style="color:#ff4444;">
+    ■ Above 80 Very Uncomfortable
+  </span>
+
 </div>
 
+</div>
 </div>
 
 <script>
@@ -385,42 +620,99 @@ const maxMinLabelPlugin = {
     const blockGap = isMobile ? 11 : 18;
     const valueX = isMobile ? x + 28 : x + 37;
     // ==============================
-    // Temperature graph: Sun + Shade
-    // 気温グラフ：日向 + 日陰
+    // Temperature graph: Sun + Shade + Indoor
+    // 気温グラフ：日向 + 日陰 + 室温
     // ==============================
     if (
       options.sunMax !== undefined &&
       options.sunMin !== undefined &&
       options.shadeMax !== undefined &&
-      options.shadeMin !== undefined
+      options.shadeMin !== undefined &&
+      options.indoorTempMax !== undefined &&
+      options.indoorTempMin !== undefined
     ) {
-    
+
       // Sun Temp
       // 日向温度
       ctx.fillStyle = "#ff6384";
-    
+
       ctx.fillText("MAX:", x, y);
       ctx.fillText(options.sunMax + "°C", valueX, y);
-    
+
       y += lineStep;
-    
+
       ctx.fillText("MIN:", x, y);
       ctx.fillText(options.sunMin + "°C", valueX, y);
-    
+
       y += blockGap;
-    
+
       // Shade Temp
       // 日陰温度
       ctx.fillStyle = "#36a2eb";
-    
+
       ctx.fillText("MAX:", x, y);
       ctx.fillText(options.shadeMax + "°C", valueX, y);
-    
+
       y += lineStep;
-    
+
       ctx.fillText("MIN:", x, y);
       ctx.fillText(options.shadeMin + "°C", valueX, y);
-    
+
+      y += blockGap;
+
+      // Indoor Temp
+      // 室温
+      ctx.fillStyle = "#66ff66";
+
+      ctx.fillText("MAX:", x, y);
+      ctx.fillText(options.indoorTempMax + "°C", valueX, y);
+
+      y += lineStep;
+
+      ctx.fillText("MIN:", x, y);
+      ctx.fillText(options.indoorTempMin + "°C", valueX, y);
+
+      ctx.restore();
+      return;
+    }
+
+    // ==============================
+    // Humidity graph: Outdoor + Indoor
+    // 湿度グラフ：屋外 + 室内
+    // ==============================
+    if (
+      options.outdoorMax !== undefined &&
+      options.outdoorMin !== undefined &&
+      options.indoorMax !== undefined &&
+      options.indoorMin !== undefined
+    ) {
+
+      // Outdoor humidity
+      // 屋外湿度
+      ctx.fillStyle = options.outdoorColor;
+
+      ctx.fillText("MAX:", x, y);
+      ctx.fillText(options.outdoorMax + options.unit, valueX, y);
+
+      y += lineStep;
+
+      ctx.fillText("MIN:", x, y);
+      ctx.fillText(options.outdoorMin + options.unit, valueX, y);
+
+      y += blockGap;
+
+      // Indoor humidity
+      // 室内湿度
+      ctx.fillStyle = options.indoorColor;
+
+      ctx.fillText("MAX:", x, y);
+      ctx.fillText(options.indoorMax + options.unit, valueX, y);
+
+      y += lineStep;
+
+      ctx.fillText("MIN:", x, y);
+      ctx.fillText(options.indoorMin + options.unit, valueX, y);
+
       ctx.restore();
       return;
     }
@@ -499,6 +791,8 @@ let chartMode = "main";
 // lastSun       = 日向温度
 // lastHumidity  = 湿度
 // lastPressure  = 気圧
+// lastIndoorTemp = エアコン室内温度
+// lastIndoorHumidity = エアコン室内湿度
 // ============================================================
 let lastLabels = [];
 
@@ -509,6 +803,10 @@ let lastSun = [];
 let lastHumidity = [];
 
 let lastPressure = [];
+
+let lastIndoorTemp = [];
+
+let lastIndoorHumidity = [];
 
 
 // ============================================================
@@ -525,40 +823,100 @@ function loadLatest() {
 
   fetch("data.json?ts=" + new Date().getTime())
 
-    // ========================================================
-    // Convert HTTP response to JSON
-    // HTTP応答をJSONへ変換
-    // ========================================================
     .then(response => response.json())
 
-    // ========================================================
-    // Update displayed sensor values
-    // 表示中のセンサー値更新
-    // ========================================================
     .then(data => {
 
-      // Shade temperature
-      // 日陰温度
       document.getElementById("shade_temp").textContent =
-        data.shade_temp + " °C";
+        data.shade_temp;
 
-      // Sun temperature
-      // 日向温度
       document.getElementById("sun_temp").textContent =
         data.sun_temp;
 
-      // Humidity
-      // 湿度
       document.getElementById("humidity").textContent =
         data.humidity;
 
-      // Pressure
-      // 気圧
       document.getElementById("pressure").textContent =
         data.pressure;
+
+      // ======================================================
+      // Load indoor latest data
+      // 室内最新データ読み込み
+      // ======================================================
+      fetch("indoor.json?ts=" + new Date().getTime())
+
+        .then(response => response.json())
+
+        .then(indoor => {
+
+          document.getElementById("indoor_temp").textContent =
+            indoor.shade_temp;
+
+          document.getElementById("indoor_humidity").textContent =
+            indoor.humidity;
+
+          // ==================================================
+          // Discomfort Index
+          // 不快指数
+          // ==================================================
+          const outdoorTemp = parseFloat(data.shade_temp);
+          const outdoorHum  = parseFloat(data.humidity);
+
+          const indoorTempVal = parseFloat(indoor.shade_temp);
+          const indoorHumVal  = parseFloat(indoor.humidity);
+
+          const outdoorDI =
+            0.81 * outdoorTemp +
+            0.01 * outdoorHum * (0.99 * outdoorTemp - 14.3) +
+            46.3;
+
+          const indoorDI =
+            0.81 * indoorTempVal +
+            0.01 * indoorHumVal * (0.99 * indoorTempVal - 14.3) +
+            46.3;
+
+          document.getElementById("discomfort").textContent =
+            outdoorDI.toFixed(0);
+
+          document.getElementById("indoor_di").textContent =
+            indoorDI.toFixed(0);
+
+          document.getElementById("discomfort").style.color =
+            getDiscomfortColor(outdoorDI);
+
+          document.getElementById("indoor_di").style.color =
+            getDiscomfortColor(indoorDI);
+        });
     });
 }
 
+// ==========================================================
+// Discomfort Index Color
+// 不快指数色判定
+// ==========================================================
+function getDiscomfortColor(di)
+{
+  if (di <= 70) {
+    return "#66ff66";
+  }
+
+  if (di <= 75) {
+    return "#ffff66";
+  }
+
+  if (di <= 80) {
+    return "#ff9933";
+  }
+
+  return "#ff4444";
+}
+
+function getDiscomfortColor(di) {
+  if (di <= 70) return "#66ff66";
+  if (di <= 75) return "#ffff66";
+  if (di <= 80) return "#ff9933";
+  return "#ff4444";
+}
 
 // ============================================================
 // Update clock display
@@ -667,6 +1025,11 @@ function loadHistory() {
       const sun = [];
       const humidity = [];
       const pressure = [];
+      // Indoor temperature
+      const indoorTemp = [];   
+      // Indoor humidity
+      // 室内湿度
+      const indoorHumidity = [];
 
       // ======================================================
       // Create fixed 24-hour labels
@@ -685,6 +1048,8 @@ function loadHistory() {
           sun.push(null);
           humidity.push(null);
           pressure.push(null);
+          indoorTemp.push(null);
+          indoorHumidity.push(null);
         }
       }
 
@@ -803,15 +1168,104 @@ function loadHistory() {
       lastSun = sun;
       lastHumidity = humidity;
       lastPressure = pressure;
+      
+      // ======================================================
+      // Load indoor temperature history
+      // 室温履歴を読み込む
+      // ======================================================
+      fetch("history_indoor.csv?ts=" + Date.now(), { cache: "no-store" })
+      
+        .then(response => response.text())
+      
+        .then(indoorText => {
+      
+          const indoorLines = indoorText.trim().split("\n");
+      
+          // Remove header line
+          // ヘッダー行を削除
+          indoorLines.shift();
+      
+          indoorLines.forEach(line => {
+      
+            if (!line.trim()) return;
+      
+            const cols = line.trim().split(",");
+      
+            // CSV:
+            // 0 = date
+            // 1 = time
+            // 2 = indoor temperature
+            // 3 = unused sun_temp
+            // 4 = indoor humidity
+            // 5 = pressure
+            if (cols.length < 6) return;
+      
+            const dateStr = cols[0].trim();
+            const timeStr = cols[1].trim();
+      
+            const dateParts = dateStr.replace(/-/g, "/").split("/");
+            const timeParts = timeStr.split(":");
+      
+            if (dateParts.length < 3) return;
+            if (timeParts.length < 2) return;
+      
+            const year  = parseInt(dateParts[0], 10);
+            const month = parseInt(dateParts[1], 10) - 1;
+            const day   = parseInt(dateParts[2], 10);
+      
+            const hour   = parseInt(timeParts[0], 10);
+            const minute = parseInt(timeParts[1], 10);
+      
+            const dateObj = new Date(year, month, day, hour, minute, 0);
+      
+            if (isNaN(dateObj.getTime())) return;
+      
+            if (
+              dateObj.getFullYear() !== targetDate.getFullYear() ||
+              dateObj.getMonth() !== targetDate.getMonth() ||
+              dateObj.getDate() !== targetDate.getDate()
+            ) {
+              return;
+            }
+      
+            const labelDate = new Date(dateObj);
+      
+            let roundedMin = Math.round(labelDate.getMinutes() / 10) * 10;
+      
+            if (roundedMin >= 60) {
+              labelDate.setHours(labelDate.getHours() + 1);
+              roundedMin = 0;
+            }
+      
+            labelDate.setMinutes(roundedMin, 0, 0);
+      
+            const index =
+              labelDate.getHours() * 6 + (roundedMin / 10);
+      
+            if (index < 0 || index >= labels.length) return;
+      
+            // Indoor temperature
+            // 室温
+            indoorTemp[index] = parseFloat(cols[2]);
+            // Indoor humidity
+            // 室内湿度
+            indoorHumidity[index] = parseFloat(cols[4]);
+          });
+      
+          lastIndoorTemp = indoorTemp;
+          lastIndoorHumidity = indoorHumidity;
 
-      if (chartMode === "pressure") {
-        drawPressureChart();
-      } else if (chartMode === "humidity") {
-        drawHumidityChart();
-      } else {
-        drawMainChart();
-      }
-    });
+          if (chartMode === "pressure") {
+            drawPressureChart();
+          } else if (chartMode === "humidity") {
+            drawHumidityChart();
+          } else if (chartMode === "id") {
+            drawIdChart();
+          } else {
+            drawMainChart();
+          }
+        });
+     });
 }
 
 // ============================================================
@@ -860,20 +1314,20 @@ function drawMainChart() {
   // ====================================================
   // Calculate max/min temperature
   // 最高・最低気温を計算
-  // ====================================================
-  const validShade = lastShade.filter(v => v !== null);
-  const validSun   = lastSun.filter(v => v !== null);
+    // ====================================================
+  const validShade = lastShade.filter(v => v !== null && !isNaN(v));
+  const validSun = lastSun.filter(v => v !== null && !isNaN(v));
+  const validIndoorTemp = lastIndoorTemp.filter(v => v !== null && !isNaN(v));
   
-  const shadeMax = Math.max(...validShade).toFixed(1);
-  const shadeMin = Math.min(...validShade).toFixed(1);
+  const shadeMax = validShade.length ? Math.max(...validShade).toFixed(1) : "--";
+  const shadeMin = validShade.length ? Math.min(...validShade).toFixed(1) : "--";
   
-  const sunMax = Math.max(...validSun).toFixed(1);
-  const sunMin = Math.min(...validSun).toFixed(1);
+  const sunMax = validSun.length ? Math.max(...validSun).toFixed(1) : "--";
+  const sunMin = validSun.length ? Math.min(...validSun).toFixed(1) : "--";
+  
+  const indoorMax = validIndoorTemp.length ? Math.max(...validIndoorTemp).toFixed(1) : "--";
+  const indoorMin = validIndoorTemp.length ? Math.min(...validIndoorTemp).toFixed(1) : "--";
 
-  const validHumidity = lastHumidity.filter(v => v !== null);
-  
-  const humidityMax = Math.max(...validHumidity).toFixed(1);
-  const humidityMin = Math.min(...validHumidity).toFixed(1);
   // ==========================================================
   // Create Chart.js graph
   // Chart.js グラフ生成
@@ -901,10 +1355,11 @@ function drawMainChart() {
         // 日陰温度グラフ
         // ====================================================
         {
-          label: "Shade Temp / 日陰",
+          label: "Shade Temp",
 
           data: lastShade,
-
+          borderColor: "#36a2eb",
+          backgroundColor: "#36a2eb",
           borderWidth: 2,
 
           // Straight line
@@ -953,9 +1408,46 @@ function drawMainChart() {
         // 日向温度グラフ
         // ====================================================
         {
-          label: "Sun Temp / 太陽直下",
+          label: "Roof Top",
 
           data: lastSun,
+
+          borderColor: "#ff6384",
+          backgroundColor: "#ff6384",
+          borderWidth: 2,
+
+          tension: 0,
+
+          yAxisID: "y",
+
+          pointRadius: function(context) {
+
+            const label =
+              context.chart.data.labels[context.dataIndex];
+
+            if (window.innerWidth <= 600) {
+              return 0;
+            }
+
+            if (label.endsWith(":00")) {
+              return 4;
+            }
+
+            return 0;
+          },
+        },
+
+        // ====================================================
+        // Indoor temperature graph
+        // 室温グラフ
+        // ====================================================
+        {
+          label: "Aircon Room Temp",
+
+          data: lastIndoorTemp,
+
+          borderColor: "#66ff66",
+          backgroundColor: "#66ff66",
 
           borderWidth: 2,
 
@@ -968,27 +1460,19 @@ function drawMainChart() {
             const label =
               context.chart.data.labels[context.dataIndex];
 
-            // Hide all points on mobile
-            // モバイルは全部非表示
             if (window.innerWidth <= 600) {
               return 0;
             }
 
-            // Show point every hour
-            // 1時間ごとだけ点を表示
             if (label.endsWith(":00")) {
               return 4;
             }
 
-            // No point
-            // 点なし
             return 0;
           },
         }
       ]
     },
-
-
     // ========================================================
     // Chart options
     // グラフオプション
@@ -1009,12 +1493,14 @@ function drawMainChart() {
 
       plugins: {
 
-        maxMinLabel: {
-          shadeMax: shadeMax,
-          shadeMin: shadeMin,
-          sunMax: sunMax,
-          sunMin: sunMin
-        },
+      maxMinLabel: {
+        shadeMax: shadeMax,
+        shadeMin: shadeMin,
+        sunMax: sunMax,
+        sunMin: sunMin,
+        indoorTempMax: indoorMax,
+        indoorTempMin: indoorMin
+      },
 
         // ====================================================
         // Legend settings
@@ -1205,10 +1691,27 @@ function drawHumidityChart() {
     weatherChart.destroy();
   }
 
-  const validHumidity = lastHumidity.filter(v => v !== null);
+  // ==========================================================
+  // Calculate outdoor / indoor humidity max-min
+  // 屋外・室内湿度の最高・最低を計算
+  // ==========================================================
+  const validOutdoorHumidity =
+    lastHumidity.filter(v => v !== null);
   
-  const humidityMax = Math.max(...validHumidity).toFixed(1);
-  const humidityMin = Math.min(...validHumidity).toFixed(1);
+  const validIndoorHumidity =
+    lastIndoorHumidity.filter(v => v !== null);
+  
+  const outdoorHumidityMax =
+    Math.max(...validOutdoorHumidity).toFixed(1);
+  
+  const outdoorHumidityMin =
+    Math.min(...validOutdoorHumidity).toFixed(1);
+  
+  const indoorHumidityMax =
+    Math.max(...validIndoorHumidity).toFixed(1);
+  
+  const indoorHumidityMin =
+    Math.min(...validIndoorHumidity).toFixed(1);
 
   // ==========================================================
   // Create Chart.js humidity graph
@@ -1233,11 +1736,11 @@ function drawHumidityChart() {
       datasets: [
 
         // ====================================================
-        // Humidity dataset
-        // 湿度データセット
+        // Outdoor humidity dataset
+        // 屋外湿度データセット
         // ====================================================
         {
-          label: "Humidity % / 湿度",
+          label: "Outdoor Humidity",
 
           data: lastHumidity,
 
@@ -1257,22 +1760,61 @@ function drawHumidityChart() {
 
           yAxisID: "y",
 
+          // ==================================================
+          // Point display control
+          // 点表示制御
+          // ==================================================
+          pointRadius: function(context) {
+
+            const label =
+              context.chart.data.labels[context.dataIndex];
+
+            // Hide all points on mobile
+            // モバイルは全部非表示
+            if (window.innerWidth <= 600) {
+              return 0;
+            }
+
+            // Show point every hour
+            // 1時間ごとだけ点を表示
+            if (label.endsWith(":00")) {
+              return 4;
+            }
+
+            // No point
+            // 点なし
+            return 0;
+          },
+        },
+
+        // ====================================================
+        // Indoor humidity dataset
+        // 室内湿度データセット
+        // ====================================================
+        {
+          label: "Indoor Humidity",
+
+          data: lastIndoorHumidity,
+
+          // Graph line color
+          // グラフ線色
+          borderColor: "#66ff66",
+
+          // Point/background color
+          // 点/背景色
+          backgroundColor: "#66ff66",
+
+          borderWidth: 2,
+
+          // Straight line
+          // 直線表示
+          tension: 0,
+
+          yAxisID: "y",
 
           // ==================================================
           // Point display control
           // 点表示制御
-          // --------------------------------------------------
-          // Mobile:
-          //   Hide all points
-          //
-          // Desktop:
-          //   Show points every hour only
-          //
-          // モバイル:
-          //   全点非表示
-          //
-          // デスクトップ:
-          //   1時間ごとのみ点表示
           // ==================================================
           pointRadius: function(context) {
 
@@ -1299,7 +1841,6 @@ function drawHumidityChart() {
       ]
     },
 
-
     // ========================================================
     // Chart options
     // グラフオプション
@@ -1321,10 +1862,13 @@ function drawHumidityChart() {
       plugins: {
       
         maxMinLabel: {
-          maxValue: humidityMax,
-          minValue: humidityMin,
+          outdoorMax: outdoorHumidityMax,
+          outdoorMin: outdoorHumidityMin,
+          indoorMax: indoorHumidityMax,
+          indoorMin: indoorHumidityMin,
           unit: "%",
-          color: "#ff9f40"
+          outdoorColor: "#ff9f40",
+          indoorColor: "#66ff66"
         },
       
         // ====================================================
@@ -1495,9 +2039,373 @@ function drawHumidityChart() {
 // Humidityボタンが押された時に呼ばれる
 // ============================================================
 function showHumidityChart() {
+  document.getElementById("diLegend").style.display = "none";
   drawHumidityChart();
 }
 
+// ============================================================
+// Draw Discomfort Index chart
+// 不快指数グラフ描画
+// ------------------------------------------------------------
+function drawIdChart() {
+
+  // ==========================================================
+  // Set current chart mode
+  // 現在のグラフモード設定
+  // ==========================================================
+  chartMode = "id";
+
+  // ==========================================================
+  // Get canvas 2D context
+  // canvas の 2D コンテキスト取得
+  // ==========================================================
+  const ctx =
+    document.getElementById("weatherChart").getContext("2d");
+
+  // ==========================================================
+  // Destroy previous chart
+  // 前回グラフ削除
+  // ==========================================================
+  if (weatherChart) {
+    weatherChart.destroy();
+  }
+
+  // ==========================================================
+  // Calculate Discomfort Index arrays
+  // 不快指数配列を計算
+  // ==========================================================
+  const outdoorDi = [];
+  const indoorDi = [];
+
+  for (let i = 0; i < lastLabels.length; i++) {
+
+    // Outdoor DI
+    // 屋外不快指数
+    if (
+      lastShade[i] !== null &&
+      lastHumidity[i] !== null &&
+      !isNaN(lastShade[i]) &&
+      !isNaN(lastHumidity[i])
+    ) {
+      const t = lastShade[i];
+      const h = lastHumidity[i];
+
+      outdoorDi[i] =
+        0.81 * t +
+        0.01 * h * (0.99 * t - 14.3) +
+        46.3;
+    } else {
+      outdoorDi[i] = null;
+    }
+
+    // Indoor DI
+    // 室内不快指数
+    if (
+      lastIndoorTemp[i] !== null &&
+      lastIndoorHumidity[i] !== null &&
+      !isNaN(lastIndoorTemp[i]) &&
+      !isNaN(lastIndoorHumidity[i])
+    ) {
+      const t = lastIndoorTemp[i];
+      const h = lastIndoorHumidity[i];
+
+      indoorDi[i] =
+        0.81 * t +
+        0.01 * h * (0.99 * t - 14.3) +
+        46.3;
+    } else {
+      indoorDi[i] = null;
+    }
+  }
+
+  // ==========================================================
+  // Calculate max/min DI
+  // 不快指数の最高・最低を計算
+  // ==========================================================
+  const validOutdoorDi =
+    outdoorDi.filter(v => v !== null && !isNaN(v));
+
+  const validIndoorDi =
+    indoorDi.filter(v => v !== null && !isNaN(v));
+
+  const outdoorMax =
+    validOutdoorDi.length ? Math.max(...validOutdoorDi).toFixed(0) : "--";
+
+  const outdoorMin =
+    validOutdoorDi.length ? Math.min(...validOutdoorDi).toFixed(0) : "--";
+
+  const indoorMax =
+    validIndoorDi.length ? Math.max(...validIndoorDi).toFixed(0) : "--";
+
+  const indoorMin =
+    validIndoorDi.length ? Math.min(...validIndoorDi).toFixed(0) : "--";
+
+  // ==========================================================
+  // Create Chart.js DI graph
+  // Chart.js 不快指数グラフ生成
+  // ==========================================================
+  weatherChart = new Chart(ctx, {
+
+    type: "line",
+
+    data: {
+      labels: lastLabels,
+
+      datasets: [
+
+        // ====================================================
+        // Outdoor Discomfort Index
+        // 屋外不快指数
+        // ====================================================
+        {
+          label: "Outdoor DI",
+
+          data: outdoorDi,
+
+          borderColor: "#ff4444",
+          backgroundColor: "#ff4444",
+
+          segment: {
+            borderColor: ctx => {
+              const v = ctx.p1.parsed.y;
+              return getDiscomfortColor(v);
+            }
+          },
+        
+          pointBackgroundColor: ctx => {
+            const v = ctx.parsed.y;
+            return getDiscomfortColor(v);
+          },
+        
+          pointBorderColor: ctx => {
+            const v = ctx.parsed.y;
+            return getDiscomfortColor(v);
+          },
+          pointStyle: "circle",
+          borderWidth: 2,
+
+          tension: 0,
+
+          yAxisID: "y",
+
+          pointRadius: function(context) {
+            const label = context.chart.data.labels[context.dataIndex];
+            
+            
+
+            if (window.innerWidth <= 600) {
+            
+              const hour = parseInt(
+                label.substring(0, 2),
+                10
+              );
+            
+              if (
+                label.endsWith(":00") &&
+                hour % 4 === 0
+              ) {
+                return 5;
+              }
+            
+              return 0;
+            }
+        
+            if (label.endsWith(":00")) {
+              return 5;
+            }
+        
+            return 0;
+          },
+        },
+
+        // ====================================================
+        // Indoor Discomfort Index
+        // 室内不快指数
+        // ====================================================
+        {
+          label: "Indoor DI",
+
+          data: indoorDi,
+
+          borderColor: "#66ff66",
+          backgroundColor: "#66ff66",
+
+          segment: {
+            borderColor: ctx => {
+              const v = ctx.p1.parsed.y;
+              return getDiscomfortColor(v);
+            }
+          },
+        
+          pointBackgroundColor: ctx => {
+            const v = ctx.parsed.y;
+            return getDiscomfortColor(v);
+          },
+        
+          pointBorderColor: ctx => {
+            const v = ctx.parsed.y;
+            return getDiscomfortColor(v);
+          },
+          pointStyle: "triangle",
+          borderWidth: 2,
+
+          tension: 0,
+
+          yAxisID: "y",
+
+          pointRadius: function(context) {
+
+            const label = context.chart.data.labels[context.dataIndex];
+            
+
+            if (window.innerWidth <= 600) {
+            
+              const hour = parseInt(
+                label.substring(0, 2),
+                10
+              );
+            
+              if (
+                label.endsWith(":00") &&
+                hour % 4 === 0
+              ) {
+                return 5;
+              }
+            
+              return 0;
+            }
+            if (label.endsWith(":00")) {
+              return 5;
+            }
+        
+            return 0;
+          },
+        },
+      ]
+    },
+
+    options: {
+
+      responsive: true,
+
+      maintainAspectRatio: false,
+
+      spanGaps: false,
+
+      plugins: {
+
+        maxMinLabel: {
+          outdoorMax: outdoorMax,
+          outdoorMin: outdoorMin,
+          indoorMax: indoorMax,
+          indoorMin: indoorMin,
+          unit: "",
+          outdoorColor: "#ff4444",
+          indoorColor: "#66ff66"
+        },
+
+        legend: {
+          labels: {
+            color: "white",
+            usePointStyle: true
+          }
+        },
+
+        title: {
+          display: false
+        }
+      },
+
+      scales: {
+
+        // ====================================================
+        // X-axis
+        // X軸
+        // ====================================================
+        x: {
+          ticks: {
+            color: "white",
+            autoSkip: false,
+
+            callback: function(value, index) {
+
+              const label = this.getLabelForValue(value);
+
+              if (window.innerWidth <= 600) {
+                const hour = parseInt(label.substring(0, 2), 10);
+
+                if (label.endsWith(":00") && hour % 2 === 0) {
+                  return label;
+                }
+
+                return "";
+              }
+
+              if (label.endsWith(":00")) {
+                return label;
+              }
+
+              return "";
+            }
+          },
+
+          grid: {
+            color: function(context) {
+
+              const label =
+                context.chart.data.labels[context.index];
+
+              if (label && label.endsWith(":00")) {
+                return "#555";
+              }
+
+              return "rgba(0,0,0,0)";
+            }
+          }
+        },
+
+        // ====================================================
+        // Y-axis
+        // Y軸
+        // ----------------------------------------------------
+        // Discomfort index range
+        // 不快指数範囲
+        // ====================================================
+        y: {
+          position: "left",
+
+          min: 60,
+
+          max: 90,
+
+          ticks: {
+            color: "white"
+          },
+
+          grid: {
+            color: "#555"
+          }
+        },
+
+        y1: {
+          position: "right",
+
+          min: 60,
+
+          max: 90,
+
+          ticks: {
+            color: "white"
+          },
+
+          grid: {
+            drawOnChartArea: false
+          }
+        }
+      }
+    }
+  });
+}
 
 // ============================================================
 // Draw pressure chart
@@ -1549,7 +2457,7 @@ function drawPressureChart() {
         {
           // Pressure data
           // 気圧データ
-          label: "Pressure hPa / 気圧",
+          label: "Pressure hPa",
           data: lastPressure,
 
           // Line and point color
@@ -1699,7 +2607,19 @@ function drawPressureChart() {
 // メイン温度グラフ表示
 // ============================================================
 function showMainChart() {
+  document.getElementById("diLegend").style.display = "none";
   drawMainChart();
+}
+
+
+
+// ============================================================
+// Show Discomfort Index chart
+// 不快指数グラフ表示
+// ============================================================
+function showIdChart() {
+  document.getElementById("diLegend").style.display = "block";
+  drawIdChart();
 }
 
 
@@ -1708,6 +2628,7 @@ function showMainChart() {
 // 気圧グラフ表示
 // ============================================================
 function showPressureChart() {
+  document.getElementById("diLegend").style.display = "none";
   drawPressureChart();
 }
 

@@ -13,9 +13,10 @@
 # インストール:
 # python -m pip install pyserial
 # ==========================================================
-
-import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox
+import tkinter as tk
+
 import serial
 import serial.tools.list_ports
 import time
@@ -48,9 +49,22 @@ FIELDS = [
     "SUBNET",
 ]
 
+# ==========================================================
+# Sensor mode list
+# センサーモード一覧
+# ==========================================================
+SENSOR_MODES = {
+    "0 : No Sensor": "0",
+    "1 : BME280": "1",
+    "2 : DS18B20": "2",
+    "3 : BME280 + DS18B20": "3",
+}
+
 config = configparser.ConfigParser()
+
 entries = {}
 
+sensor_var = None
 # ==========================================================
 # Load INI file
 # INIファイル読み込み
@@ -120,31 +134,35 @@ def load_settings():
             # LOADコマンド送信
             # --------------------------------------------------
             send_line(ser, "LOAD")
-
+            start = time.time()
+            
             while True:
+                if time.time() - start > 5:
+                    messagebox.showerror("ERROR", "LOAD timeout")
+                    return
+            
                 line = ser.readline().decode(errors="ignore").strip()
-
+            
                 if line == "":
                     continue
-
-                # --------------------------------------------------
-                # End of settings
-                # 設定終了
-                # --------------------------------------------------
+            
+                print("LOAD:", line)
+            
                 if line == "END":
                     break
-
-                # --------------------------------------------------
-                # Parse KEY=VALUE format
-                # KEY=VALUE形式解析
-                # --------------------------------------------------
+            
                 if "=" in line:
                     key, val = line.split("=", 1)
-
+            
                     if key in entries:
                         entries[key].delete(0, tk.END)
                         entries[key].insert(0, val)
-
+            
+                    elif key == "SENSOR":
+                        for label, value in SENSOR_MODES.items():
+                            if value == val:
+                                sensor_var.set(label)
+                                break
         save_ini()
 
         messagebox.showinfo(
@@ -212,13 +230,16 @@ def save_settings():
             ser.reset_input_buffer()
 
             # --------------------------------------------------
-            # Send all settings
-            # 全設定送信
+            # Send text entry settings
+            # 文字入力設定を送信
             # --------------------------------------------------
             for key in FIELDS:
 
                 val = entries[key].get()
-
+                
+                if val == "":
+                    val = "__EMPTY__"
+                
                 send_line(
                     ser,
                     f"SET {key} {val}"
@@ -236,6 +257,33 @@ def save_settings():
                     )
 
                     return
+
+            # --------------------------------------------------
+            # Send sensor mode setting
+            # センサーモード設定を送信
+            # --------------------------------------------------
+            sensor_value = SENSOR_MODES.get(
+                sensor_var.get(),
+                "3"
+            )
+
+            send_line(
+                ser,
+                f"SET SENSOR {sensor_value}"
+            )
+
+            # --------------------------------------------------
+            # Wait for OK response
+            # OK応答待ち
+            # --------------------------------------------------
+            if not wait_ok(ser):
+
+                messagebox.showerror(
+                    "ERROR",
+                    "SENSOR 保存失敗"
+                )
+
+                return
 
         save_ini()
 
@@ -403,6 +451,45 @@ for i, key in enumerate(FIELDS, start=1):
     entries[key] = ent
 
 # ==========================================================
+# Sensor mode combobox
+# センサーモード選択コンボボックス
+# ==========================================================
+sensor_row = len(FIELDS) + 1
+
+tk.Label(
+    root,
+    text="SENSOR"
+).grid(
+    row=sensor_row,
+    column=0,
+    padx=5,
+    pady=5,
+    sticky="e"
+)
+
+sensor_var = tk.StringVar()
+
+sensor_var.set(
+    "3 : BME280 + DS18B20"
+)
+
+sensor_combo = ttk.Combobox(
+    root,
+    textvariable=sensor_var,
+    values=list(SENSOR_MODES.keys()),
+    width=42,
+    state="readonly"
+)
+
+sensor_combo.grid(
+    row=sensor_row,
+    column=1,
+    columnspan=2,
+    padx=5,
+    pady=5
+)
+
+# ==========================================================
 # LOAD button
 # LOADボタン
 # ==========================================================
@@ -412,7 +499,7 @@ tk.Button(
     width=15,
     command=load_settings
 ).grid(
-    row=len(FIELDS) + 1,
+    row=len(FIELDS) + 2,
     column=0,
     padx=5,
     pady=10
@@ -428,7 +515,7 @@ tk.Button(
     width=15,
     command=save_settings
 ).grid(
-    row=len(FIELDS) + 1,
+    row=len(FIELDS) + 2,
     column=1,
     padx=5,
     pady=10

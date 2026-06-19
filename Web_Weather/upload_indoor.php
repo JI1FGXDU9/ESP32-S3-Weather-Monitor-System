@@ -1,4 +1,5 @@
 <?php
+// upload_indoor.php
 // ============================================================
 // Weather data upload receiver
 // 気象データアップロード受信プログラム
@@ -124,7 +125,7 @@ $out = array(
 // ============================================================
 $result = file_put_contents(
 
-    __DIR__ . "/data.json",
+    __DIR__ . "/indoor.json",
 
     json_encode($out, JSON_PRETTY_PRINT)
 );
@@ -148,7 +149,7 @@ if ($result === false) {
 // Append history CSV
 // 履歴CSV追記
 // ============================================================
-$csvfile = __DIR__ . "/history.csv";
+$csvfile = __DIR__ . "/history_indoor.csv";
 
 
 // ============================================================
@@ -194,7 +195,7 @@ if (!file_exists($csvfile)) {
 //
 // 同じ10分間に複数の履歴レコードを書かないようにする。
 // ============================================================
-$slotfile = __DIR__ . "/last_history_slot.txt";
+$slotfile = __DIR__ . "/last_history_slot_indoor.txt";
 
 
 // ============================================================

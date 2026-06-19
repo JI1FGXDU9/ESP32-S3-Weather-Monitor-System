@@ -761,7 +761,7 @@ function drawMainChart() {
         // 日陰温度グラフ
         // ====================================================
         {
-          label: "Shade Temp C / 日陰",
+          label: "Shade Temp / 日陰",
 
           data: lastShade,
 
@@ -813,7 +813,7 @@ function drawMainChart() {
         // 日向温度グラフ
         // ====================================================
         {
-          label: "Sun Temp C / 太陽直下",
+          label: "Sun Temp / 太陽直下",
 
           data: lastSun,
 
@@ -977,7 +977,7 @@ function drawMainChart() {
 
           min: 0,
 
-          max: 60,
+          max: 50,
 
           ticks: {
 
@@ -1004,7 +1004,7 @@ function drawMainChart() {
 
           min: 0,
 
-          max: 60,
+          max: 50,
 
           ticks: {
 
@@ -1365,6 +1365,20 @@ function drawPressureChart() {
     weatherChart.destroy();
   }
 
+  // ====================================================
+  // Auto pressure scale
+  // 気圧自動スケール
+  // ====================================================
+  const validPressure = lastPressure.filter(v => v !== null);
+
+  const pMin = Math.min(...validPressure);
+  const pMax = Math.max(...validPressure);
+
+  // 少し余裕を持たせる
+  const graphMin = Math.floor(pMin - 1);
+  const graphMax = Math.ceil(pMax + 1);
+
+
   // Create pressure chart
   // 気圧グラフ作成
   weatherChart = new Chart(ctx, {
@@ -1483,8 +1497,8 @@ function drawPressureChart() {
         // 左Y軸
         y: {
           position: "left",
-          min: 850,
-          max: 1050,
+          min: graphMin,
+          max: graphMax,
           ticks: {
             color: "white"
           },
@@ -1497,8 +1511,8 @@ function drawPressureChart() {
         // 右Y軸
         y1: {
           position: "right",
-          min: 850,
-          max: 1050,
+          min: graphMin,
+          max: graphMax,
           ticks: {
             color: "white"
           },

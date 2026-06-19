@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clarin Weather Year Graph</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+  margin: 0;
+  background: #1f1f1f;
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+h1 {
+  margin-top: 10px;
+  font-size: 30px;
+}
+
+.chart-box {
+  background: #303030;
+  max-width: 1100px;
+  margin: 20px auto;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.canvas-wrap {
+  position: relative;
+  height: 520px;
+  background: #303030;
+}
+
+#yearChart {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+button {
+  font-size: 15px;
+  padding: 5px 12px;
+  margin: 3px;
+}
+
+.info {
+  color: #cccccc;
+  font-size: 15px;
+  margin: 8px 0 12px 0;
+}
+
+@media screen and (max-width: 600px) {
+  h1 { font-size: 22px; }
+  .chart-box { width: 96vw; padding: 8px; }
+  .canvas-wrap { height: 420px; }
+  button { font-size: 13px; padding: 4px 8px; }
+}
+</style>
+</head>
+
+<body>
+
+<h1>Clarin Weather Year Graph</h1>
+
+<div class="chart-box">
+
+  <div style="margin-bottom:10px;">
+    <button onclick="location.href='index.html'">
+    1 Day Graph / 1日表示</button>
+    <button onclick="showShadeTempChart()">Shade Temp / 日陰気温</button>
+    <button onclick="showSunTempChart()">Sun Temp / 日向温度</button>
+    <button onclick="showHumidityChart()">Humidity / 湿度</button>
+    <button onclick="showPressureChart()">Pressure / 気圧</button>
+  </div>
+
+  <div class="info" id="rangeText">Loading history.csv...</div>
+
+  <div class="canvas-wrap">
+    <canvas id="yearChart"></canvas>
+  </div>
+
+</div>
+
+<script>
+
+// ============================================================
+// Global variables
+// グローバル変数
+// ============================================================
+let yearChart = null;
+let dailyData = [];
+let chartMode = "shadeTemp";
+
+// ============================================================
+// Max / Min value display plugin
+// 最高・最低値表示プラグイン
+// ------------------------------------------------------------
+// Displays MAX / MIN values inside the graph area.
+// グラフ内に最高・最低値を表示する
+// ============================================================
+const yearMaxMinLabelPlugin = {
+  id: "yearMaxMinLabel",
+
+  afterDraw(chart, args, options) {
+    if (!options) return;
+
+    const ctx = chart.ctx;
+    const chartArea = chart.chartArea;
+
+    ctx.save();
+
+    const isMobile = window.matchMedia("(max-width: 600px)").matches;
+
+    ctx.font = isMobile
+      ? "bold 10px Consolas"
+      : "bold 16px Consolas";
+
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+
+    const x = isMobile
+      ? chartArea.right - 78
+      : chartArea.right - 130;
+
+    let y = chartArea.top + 10;
+
+    const lineStep = isMobile ? 12 : 20;
+    const valueX = isMobile ? x + 35 : x + 45;
+
+    // Maximum value
+    // 最高値
+    ctx.fillStyle = options.maxColor || "#ff6384";
+    ctx.fillText("MAX:", x, y);
+    ctx.fillText(options.maxValue + options.unit, valueX, y);
+
+    y += lineStep;
+
+    // Minimum value
+    // 最低値
+    ctx.fillStyle = options.minColor || "#36a2eb";
+    ctx.fillText("MIN:", x, y);
+    ctx.fillText(options.minValue + options.unit, valueX, y);
+
+    ctx.restore();
+  }
+};
+
+Chart.register(yearMaxMinLabelPlugin);
+
+
+// ============================================================
+// Parse numeric value
+// 数値変換
+// ============================================================
+function toNumber(v) {
+  const n = parseFloat(String(v).trim());
+  return isNaN(n) ? null : n;
+}
+
+// ============================================================
+// Create empty daily record
+// 1日分の空データを作成
+// ============================================================
+function createDailyRecord(dateStr) {
+  return {
+    date: dateStr,
+
+    shadeMin: null,
+    shadeMax: null,
+
+    sunMin: null,
+    sunMax: null,
+
+    humidityMin: null,
+    humidityMax: null,
+
+    pressureMin: null,
+    pressureMax: null
+  };
+}
+
+// ============================================================
+// Update min / max
+// 最小値・最大値を更新
+// ============================================================
+function updateMinMax(obj, minKey, maxKey, value) {
+  if (value === null) return;
+
+  if (obj[minKey] === null || value < obj[minKey]) {
+    obj[minKey] = value;
+  }
+
+  if (obj[maxKey] === null || value > obj[maxKey]) {
+    obj[maxKey] = value;
+  }
+}
+
+// ============================================================
+// Normalize date string
+// 日付文字列を YYYY/MM/DD に統一
+// ============================================================
+function normalizeDate(dateStr) {
+  const p = dateStr.trim().replace(/-/g, "/").split("/");
+  if (p.length < 3) return null;
+
+  const y = parseInt(p[0], 10);
+  const m = parseInt(p[1], 10);
+  const d = parseInt(p[2], 10);
+
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return null;
+
+  return String(y).padStart(4, "0") + "/" +
+         String(m).padStart(2, "0") + "/" +
+         String(d).padStart(2, "0");
+}
+
+// ============================================================
+// Load and summarize history.csv
+// history.csv を読み込み、日別の最低・最高値を作成
+// ============================================================
+function loadYearHistory() {
+
+  fetch("history.csv?ts=" + Date.now(), { cache: "no-store" })
+    .then(response => response.text())
+    .then(text => {
+
+      const lines = text.trim().split(/\r?\n/);
+      lines.shift();
+
+      const daily = {};
+
+      lines.forEach(line => {
+        if (!line.trim()) return;
+
+        const cols = line.split(",");
+
+        // CSV:
+        // 0 = date
+        // 1 = time
+        // 2 = shade_temp
+        // 3 = sun_temp
+        // 4 = humidity
+        // 5 = pressure
+        if (cols.length < 6) return;
+
+        const dateStr = normalizeDate(cols[0]);
+        if (!dateStr) return;
+
+        if (!daily[dateStr]) {
+          daily[dateStr] = createDailyRecord(dateStr);
+        }
+
+        const shade    = toNumber(cols[2]);
+        const sun      = toNumber(cols[3]);
+        const humidity = toNumber(cols[4]);
+        const pressure = toNumber(cols[5]);
+
+        updateMinMax(daily[dateStr], "shadeMin", "shadeMax", shade);
+        updateMinMax(daily[dateStr], "sunMin", "sunMax", sun);
+        updateMinMax(daily[dateStr], "humidityMin", "humidityMax", humidity);
+        updateMinMax(daily[dateStr], "pressureMin", "pressureMax", pressure);
+      });
+
+      dailyData = Object.values(daily).sort((a, b) => {
+        return a.date.localeCompare(b.date);
+      });
+      // ======================================================
+      // Remove today
+      // 当日データは除外
+      // ======================================================
+      const today = new Date();
+      
+      const todayStr =
+        today.getFullYear().toString().padStart(4, "0") + "/" +
+        (today.getMonth() + 1).toString().padStart(2, "0") + "/" +
+        today.getDate().toString().padStart(2, "0");
+      
+      dailyData = dailyData.filter(d => d.date !== todayStr);
+
+      // Keep latest 365 days only
+      // 最新365日だけ表示
+      if (dailyData.length > 365) {
+        dailyData = dailyData.slice(dailyData.length - 365);
+      }
+
+      updateRangeText();
+      redrawChart();
+    })
+    .catch(err => {
+      document.getElementById("rangeText").textContent =
+        "history.csv load error / 読み込みエラー";
+      console.error(err);
+    });
+}
+
+// ============================================================
+// Update range display
+// 表示期間表示更新
+// ============================================================
+function updateRangeText() {
+  const el = document.getElementById("rangeText");
+
+  if (dailyData.length === 0) {
+    el.textContent = "No data / データなし";
+    return;
+  }
+
+  const first = dailyData[0].date;
+  const last  = dailyData[dailyData.length - 1].date;
+
+  el.textContent =
+    first + " - " + last + "  /  " + dailyData.length + " days";
+}
+
+// ============================================================
+// Month label control
+// X軸月表示制御
+// ============================================================
+function monthTickLabel(label)
+{
+  const parts = label.split("/");
+  if (parts.length < 3) return "";
+
+  const day = parseInt(parts[2], 10);
+
+  // スマホは 1,5,10,15,20,25,30 のみ表示
+  if (window.innerWidth <= 600) {
+
+    if (
+      day === 1  ||
+      day === 5  ||
+      day === 10 ||
+      day === 15 ||
+      day === 20 ||
+      day === 25 ||
+      day === 30
+    ) {
+      return parts[1] + "/" + parts[2];
+    }
+
+    return "";
+  }
+
+  // PCは40日未満なら全部表示
+  if (dailyData.length < 40) {
+    return parts[1] + "/" + parts[2];
+  }
+
+  // 40日以上は月初だけ表示
+  if (day === 1) {
+    return parts[1] + "/" + parts[2];
+  }
+
+  // 最初のデータは必ず表示
+  if (dailyData.length > 0 && label === dailyData[0].date) {
+    return parts[1] + "/" + parts[2];
+  }
+
+  return "";
+}
+// ============================================================
+// Draw common min/max chart
+// 共通の最低・最高グラフ描画
+// ============================================================
+function drawMinMaxChart(title, minKey, maxKey, unit, yMin, yMax) {
+
+  const ctx = document.getElementById("yearChart").getContext("2d");
+
+  if (yearChart) {
+    yearChart.destroy();
+  }
+
+  const labels = dailyData.map(d => d.date);
+  const minData = dailyData.map(d => d[minKey]);
+  const maxData = dailyData.map(d => d[maxKey]);
+
+  // Calculate displayed MAX / MIN values
+  // 表示中データの最高・最低値を計算
+  const validMinData = minData.filter(v => v !== null);
+  const validMaxData = maxData.filter(v => v !== null);
+
+  const displayMin = Math.min(...validMinData).toFixed(1);
+  const displayMax = Math.max(...validMaxData).toFixed(1);
+
+  // Auto scale when yMin/yMax are null
+  // yMin/yMax が null の時は自動スケール
+  let graphMin = yMin;
+  let graphMax = yMax;
+
+  if (graphMin === null || graphMax === null) {
+    const allValues = minData.concat(maxData).filter(v => v !== null);
+    const vMin = Math.min(...allValues);
+    const vMax = Math.max(...allValues);
+
+    graphMin = Math.floor(vMin - 1);
+    graphMax = Math.ceil(vMax + 1);
+  }
+
+  yearChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "MIN / 最低",
+          data: minData,
+          borderColor: "#36a2eb",
+          backgroundColor: "#36a2eb",
+          borderWidth: 2,
+          tension: 0,
+          pointRadius: 0,
+          spanGaps: false
+        },
+        {
+          label: "MAX / 最高",
+          data: maxData,
+          borderColor: "#ff6384",
+          backgroundColor: "#ff6384",
+          borderWidth: 2,
+          tension: 0,
+          pointRadius: 0,
+          spanGaps: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: "index",
+        intersect: false
+      },
+      plugins: {
+        yearMaxMinLabel: {
+          maxValue: displayMax,
+          minValue: displayMin,
+          unit: unit,
+          maxColor: "#ff6384",
+          minColor: "#36a2eb"
+        },
+
+        legend: {
+          labels: { color: "white" }
+        },
+        title: {
+          display: true,
+          text: title,
+          color: "white",
+          font: { size: 18 }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return context.dataset.label + ": " +
+                     context.parsed.y.toFixed(1) + unit;
+            }
+          }
+        }
+      },
+      scales: {
+
+        // ====================================================
+        // X axis
+        // ====================================================
+        x: {
+          ticks: {
+            color: "white",
+            autoSkip: false,
+            maxRotation: 0,
+
+            callback: function(value, index) {
+              const label = this.getLabelForValue(value);
+              return monthTickLabel(label);
+            }
+          },
+
+          grid: {
+            color: function(context) {
+              const label =
+                context.chart.data.labels[context.index];
+
+              return monthTickLabel(label)
+                ? "#555"
+                : "rgba(0,0,0,0)";
+            }
+          }
+        },
+
+        // ====================================================
+        // Left Y axis
+        // ====================================================
+        y: {
+          position: "left",
+
+          min: graphMin,
+          max: graphMax,
+
+          ticks: {
+            color: "white",
+
+            callback: function(value) {
+
+              // Smartphone: no unit
+              // スマホは単位なし
+              if (window.innerWidth <= 600) {
+                return value;
+              }
+
+              return value + unit;
+            }
+          },
+
+          grid: {
+            color: "#555"
+          }
+        },
+
+        // ====================================================
+        // Right Y axis
+        // ====================================================
+        y1: {
+
+          // Hide on smartphone
+          // スマホでは非表示
+          display: window.innerWidth > 600,
+
+          position: "right",
+
+          min: graphMin,
+          max: graphMax,
+
+          ticks: {
+            color: "white",
+
+            callback: function(value) {
+              return value + unit;
+            }
+          },
+
+          grid: {
+            drawOnChartArea: false
+          }
+        }
+      }
+    }
+  });
+}
+
+// ============================================================
+// Chart mode functions
+// グラフ切り替え関数
+// ============================================================
+function showShadeTempChart() {
+  chartMode = "shadeTemp";
+  redrawChart();
+}
+
+function showSunTempChart() {
+  chartMode = "sunTemp";
+  redrawChart();
+}
+
+function showHumidityChart() {
+  chartMode = "humidity";
+  redrawChart();
+}
+
+function showPressureChart() {
+  chartMode = "pressure";
+  redrawChart();
+}
+
+// ============================================================
+// Redraw selected chart
+// 選択中のグラフを再描画
+// ============================================================
+function redrawChart() {
+
+  if (dailyData.length === 0) return;
+
+  if (chartMode === "humidity") {
+    drawMinMaxChart(
+      "Daily Humidity Min / Max  /  日別 最低・最高湿度",
+      "humidityMin",
+      "humidityMax",
+      "%",
+      0,
+      100
+    );
+
+  } else if (chartMode === "pressure") {
+    drawMinMaxChart(
+      "Daily Pressure Min / Max  /  日別 最低・最高気圧",
+      "pressureMin",
+      "pressureMax",
+      "hPa",
+      null,
+      null
+    );
+
+  } else if (chartMode === "sunTemp") {
+    drawMinMaxChart(
+      "Daily Sun Temperature Min / Max  /  日別 日向温度 最低・最高",
+      "sunMin",
+      "sunMax",
+      "°C",
+      0,
+      70
+    );
+
+  } else {
+    drawMinMaxChart(
+      "Daily Shade Temperature Min / Max  /  日別 日陰気温 最低・最高",
+      "shadeMin",
+      "shadeMax",
+      "°C",
+      0,
+      50
+    );
+  }
+}
+
+// ============================================================
+// Initial load
+// 初回読み込み
+// ============================================================
+loadYearHistory();
+
+// Reload every 10 minutes
+// 10分ごとに再読み込み
+setInterval(loadYearHistory, 600000);
+
+</script>
+</body>
+</html>
