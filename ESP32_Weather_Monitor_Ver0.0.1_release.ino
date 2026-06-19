@@ -229,37 +229,6 @@ IPAddress subnet;
 #define DEFAULT_SUBNET     "255.255.255.0"
 
 
-// ============================================================
-// WiFi and server configuration
-// WiFiおよびサーバー設定
-// ------------------------------------------------------------
-// ssid
-//   WiFi access point name
-//   WiFiアクセスポイント名
-//
-// pass
-//   WiFi password
-//   WiFiパスワード
-//
-// uploadUrl
-//   PHP upload destination URL
-//   PHPアップロード先URL
-//
-// uploadKey
-//   Simple upload authentication key
-//   簡易アップロード認証キー
-// ============================================================
-
-////const char* ssid = "PLDTHOMEFIBRAF09D_2.4Ghz";
-////const char* pass = "Geraldine!202411$";
-
-////const char* uploadUrl = "http://ji1fgx.com/weather/upload.php";
-
-// Upload authentication key
-// アップロード認証キー
-////const char* uploadKey = "test123";   // Must match PHP side later
-                                      // 後でPHP側と一致させる
-
 
 // ============================================================
 // DNS server settings
