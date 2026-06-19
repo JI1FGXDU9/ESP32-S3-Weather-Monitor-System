@@ -36,7 +36,7 @@ date_default_timezone_set("Asia/Manila");
 // Must match ESP32-side uploadKey
 // ESP32側の uploadKey と一致させる
 // ============================================================
-$secret_key = "";
+$secret_key = "test";
 
 
 // ============================================================
@@ -83,6 +83,18 @@ if (!isset($data["key"]) || $data["key"] !== $secret_key) {
     exit;
 }
 
+function fmtSensor($value) {
+
+    if ($value === null) {
+        return "";
+    }
+
+    if (!is_numeric($value)) {
+        return "";
+    }
+
+    return number_format((float)$value, 1, ".", "");
+}
 
 // ============================================================
 // Create output data
@@ -98,21 +110,13 @@ $out = array(
     // サーバー受信時刻
     "time"        => date("Y-m-d H:i:s"),
 
-    // Shade temperature
-    // 日陰温度
-    "shade_temp"  => number_format((float)$data["shade_temp"], 1, ".", ""),
+    "shade_temp"  => fmtSensor($data["shade_temp"]),
 
-    // Sun temperature
-    // 日向温度
-    "sun_temp"    => number_format((float)$data["sun_temp"], 1, ".", ""),
+    "sun_temp"    => fmtSensor($data["sun_temp"]),
 
-    // Humidity
-    // 湿度
-    "humidity"    => number_format((float)$data["humidity"], 1, ".", ""),
+    "humidity"    => fmtSensor($data["humidity"]),
 
-    // Atmospheric pressure
-    // 気圧
-    "pressure"    => number_format((float)$data["pressure"], 1, ".", "")
+    "pressure"    => fmtSensor($data["pressure"])
 );
 
 
