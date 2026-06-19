@@ -35,7 +35,7 @@ date_default_timezone_set("Asia/Manila");
 // Must match ESP32-side uploadKey
 // ESP32側の uploadKey と一致させる
 // ============================================================
-$secret_key = "test123";
+$secret_key = "";
 
 
 // ============================================================
