@@ -1018,6 +1018,14 @@ void handleSerialInput() {
   Serial.print("pressure  = ");
   Serial.println(pressure, 1);
 }
+String jsonValue(float v) {
+
+  if (isnan(v)) {
+    return "null";
+  }
+
+  return String(v, 1);
+}
 // ============================================================
 // Upload weather data to server
 // 気象データをサーバーへアップロード
@@ -1050,10 +1058,12 @@ void uploadWeatherData() {
   // ==========================================================
   String json = "{";
   json += "\"key\":\"" + cfg_uploadKey + "\",";
-  json += "\"shade_temp\":" + String(shadeTemp, 1) + ",";
-  json += "\"sun_temp\":"   + String(sunTemp, 1) + ",";
-  json += "\"humidity\":"   + String(humidity, 1) + ",";
-  json += "\"pressure\":"   + String(pressure, 1);
+  json += "\"shade_temp\":" + jsonValue(shadeTemp) + ",";
+  json += "\"sun_temp\":"   + jsonValue(sunTemp) + ",";
+  json += "\"humidity\":"   + jsonValue(humidity) + ",";
+  json += "\"pressure\":"   + jsonValue(pressure);
+  json += "}";
+//*** Serial.println(json);
   json += "}";
 
 

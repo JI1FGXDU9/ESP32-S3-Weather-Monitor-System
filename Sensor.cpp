@@ -109,10 +109,31 @@ bool readSensors() {
   // ==========================================================
   if (sensorMode & SENSOR_BME280) {
 
-    shadeTemp = bme.readTemperature();
-    humidity  = bme.readHumidity();
-    pressure  = bme.readPressure() / 100.0;
-  }
+    float t = bme.readTemperature();
+    float h = bme.readHumidity();
+    float p = bme.readPressure() / 100.0;
+
+    // 異常値チェック
+    if (t < -40 || t > 80 ||
+        h < 0   || h > 100 ||
+        p < 850 || p > 1100) {
+
+      shadeTemp = NAN;
+      humidity  = NAN;
+      pressure  = NAN;
+
+    } else {
+
+      shadeTemp = t;
+      humidity  = h;
+      pressure  = p;
+    }
+
+  } else {
+
+    shadeTemp = NAN;
+    humidity  = NAN;
+    pressure  = NAN;  }
 
   // ==========================================================
   // DS18B20
@@ -121,13 +142,23 @@ bool readSensors() {
 
     ds18.requestTemperatures();
 
-    sunTemp = ds18.getTempCByIndex(0);
+    float t = ds18.getTempCByIndex(0);
+
+    // 異常値チェック
+    if (t <= -127.0 ||
+        t < -40.0 ||
+        t > 100.0) {
+
+      sunTemp = NAN;
+
+    } else {
+
+      sunTemp = t;
+    }
 
   } else {
 
-    // DS18B20 disabled
-    // DS18B20無効
-    sunTemp = -127.0;
+    sunTemp = NAN;
   }
 
   return true;
